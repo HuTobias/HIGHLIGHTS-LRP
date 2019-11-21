@@ -1,0 +1,3 @@
+If you are using a windows system you need to install this version of atari_py.
+
+pip install --no-index -f https://github.com/Kojoley/atari-py/releases atari_py
