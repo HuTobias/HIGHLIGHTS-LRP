@@ -31,7 +31,7 @@ model = keras.models.load_model('models/MsPacman_2M_2_reward47komma5_action_only
 
 model.summary()
 
-analyzer_z = innvestigate.analyzer.LRPAlpha1Beta0IgnoreBias(model)
+#analyzer_z = innvestigate.analyzer.LRPAlpha1Beta0IgnoreBias(model)
 analyzer_arg = Argmax(model)
 
 env = gym.make('MsPacmanNoFrameskip-v4')
@@ -49,19 +49,20 @@ if __name__ == '__main__':
         if _ < 4:
             action = env.action_space.sample()
         else:
-            my_input = np.expand_dims(stacked_frames, axis=0) / 255
+            my_input = np.expand_dims(stacked_frames, axis=0)
             output = model.predict(my_input)
+            #this output corresponds with the output in baseline if --dueling=False is correctly set for baselines.
             action = np.argmax(np.squeeze(output))
 
-            #analyzing
+            # #analyzing
             argmax = analyzer_arg.analyze(my_input)
             argmax = np.squeeze(argmax)
             argmax = image_utils.normalise_image(argmax)
 
-            # for future work
-            z_rule = analyzer_z.analyze(my_input)
-            z_rule = np.squeeze(z_rule)
-            z_rule = image_utils.normalise_image(z_rule)
+            # # for future work
+            # z_rule = analyzer_z.analyze(my_input)
+            # z_rule = np.squeeze(z_rule)
+            # z_rule = image_utils.normalise_image(z_rule)
 
             save_array(my_input,save_file_state, _)
             image = np.squeeze(my_input)
@@ -79,8 +80,8 @@ if __name__ == '__main__':
                 save_frame(saliency, save_file_argmax, index)
 
                 # # for future work
-                saliency = image_utils.add_saliency_to_image(z_rule[:, :, 3], observation, 2)
-                save_frame(saliency, save_file_z, index)
+                # saliency = image_utils.add_saliency_to_image(z_rule[:, :, 3], observation, 2)
+                # save_frame(saliency, save_file_z, index)
 
 
 

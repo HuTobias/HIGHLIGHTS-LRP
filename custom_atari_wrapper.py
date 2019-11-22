@@ -14,11 +14,13 @@ class atari_wrapper():
 
     def preprocess_frame(self,frame):
         ''' preprocessing according to openai's atari_wrappers.WrapFrame
+            also applys scaling between 0 and 1 which is done in tensorflow in baselines
         :param frame: the input frame
         :return: rescaled and greyscaled frame
         '''
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         frame = cv2.resize(frame, (self.width, self.height), interpolation=cv2.INTER_AREA)
+        frame = frame / 255
         return frame[:, :, None]
 
     def update_stacked_frame(self,new_frame):
