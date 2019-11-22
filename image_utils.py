@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import skimage
 from skimage import filters, io, transform, exposure
+import cv2
+import os
+import re
 
 def add_saliency_to_image(saliency, image, scale_factor = 3, saliency_factor = 2):
     ''' creates a edge version of an image and adds the saliency map over this image
@@ -45,3 +48,41 @@ def show_image(image):
     '''shortcut to show an image with matplotlib'''
     plt.imshow(image)
     plt.show()
+
+def generate_video(image_folder, out_path, name="video.mp4"):
+    ''' creates a video from all images in a folder
+    :param image_folder: folder containing the images
+    :param out_path: output folder for the video
+    :param name: name of the output video
+    :return: nothing, but saves the video in the given path
+    '''
+    images = [img for img in os.listdir(image_folder)]
+    images = natural_sort(images)
+    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+    fps = 60
+    height, width, layers = 420,320,3
+    video = cv2.VideoWriter(out_path + name, fourcc, fps, (width,height))
+
+
+    for image in images:
+        try:
+            i = cv2.imread(os.path.join(image_folder, image))
+            i = cv2.resize(i, (width,height))
+        except Exception as e:
+            print(e)
+            print('Try next image.')
+            continue
+        video.write(i)
+
+    cv2.destroyAllWindows()
+    video.release()
+
+def natural_sort( l ):
+    """ Sort the given list in natural sort (the way that humans expect).
+    """
+    convert = lambda text: int(text) if text.isdigit() else text
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+    l.sort( key=alphanum_key )
+    return l
+
+
