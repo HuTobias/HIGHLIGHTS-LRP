@@ -25,18 +25,21 @@ def save_q_values(array, save_file, frame):
     with open(save_file, "w") as text_file:
         text_file.write(str(array))
 
+np.random.seed(42)
+
 #model = keras.models.load_model('models/MsPacman_500K_reward26komma9_action_only.h5')
 #model = keras.models.load_model('models/MsPacman_1M_reward36komma3_action_only.h5')
 model = keras.models.load_model('models/MsPacman_2M_2_reward47komma5_action_only.h5')
 
 model.summary()
 
-#analyzer_z = innvestigate.analyzer.LRPAlpha1Beta0IgnoreBias(model)
+# analyzer_z = innvestigate.analyzer.LRPAlpha1Beta0IgnoreBias(model)
 analyzer_arg = Argmax(model)
 
 env = gym.make('MsPacmanNoFrameskip-v4')
 env.reset()
 wrapper = atari_wrapper(env)
+# wrapper.reset(noop_max=1)
 
 save_file_argmax = os.path.join('stream', 'argmax', 'argmax')
 save_file_z = os.path.join('stream', 'z_rule', 'z_rule')
@@ -45,7 +48,7 @@ save_file_state = os.path.join('stream', 'state', 'state')
 save_file_q_values = os.path.join('stream', 'q_values', 'q_values')
 
 if __name__ == '__main__':
-    for _ in range(10000):
+    for _ in range(1500):
         if _ < 4:
             action = env.action_space.sample()
         else:
@@ -54,12 +57,12 @@ if __name__ == '__main__':
             #this output corresponds with the output in baseline if --dueling=False is correctly set for baselines.
             action = np.argmax(np.squeeze(output))
 
-            # #analyzing
+            #analyzing
             argmax = analyzer_arg.analyze(my_input)
             argmax = np.squeeze(argmax)
             argmax = image_utils.normalise_image(argmax)
 
-            # # for future work
+            # for future work
             # z_rule = analyzer_z.analyze(my_input)
             # z_rule = np.squeeze(z_rule)
             # z_rule = image_utils.normalise_image(z_rule)
@@ -76,10 +79,11 @@ if __name__ == '__main__':
                 index = str(_) + '_' + str(i)
                 observation = observations[i]
                 save_frame(observation, save_file_screen, index)
-                saliency = image_utils.add_saliency_to_image(argmax[:, :, 3], observation, 2)
+                observation = image_utils.normalise_image(observation)
+                saliency = image_utils.output_saliency_map(argmax[:, :, 3], observation, 6,edges=False)
                 save_frame(saliency, save_file_argmax, index)
 
-                # # for future work
+                # for future work
                 # saliency = image_utils.add_saliency_to_image(z_rule[:, :, 3], observation, 2)
                 # save_frame(saliency, save_file_z, index)
 

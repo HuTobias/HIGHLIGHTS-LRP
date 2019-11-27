@@ -11,6 +11,7 @@ class atari_wrapper():
         self.height = 84
         self.zeros = np.zeros((self.width,self.height))
         self.stacked_frame = np.stack((self.zeros,self.zeros,self.zeros,self.zeros), axis=-1)
+        self.noop_action = 0
 
     def preprocess_frame(self,frame):
         ''' preprocessing according to openai's atari_wrappers.WrapFrame
@@ -38,6 +39,9 @@ class atari_wrapper():
     def step(self,action, skip_frames=4):
         max_frame, stacked_observations, reward, done, info = self.repeat_frames(action, skip_frames=skip_frames)
         stacked_frames = self.update_stacked_frame(max_frame)
+        #reset the environment if the game ended
+        if done:
+            self.reset()
         return stacked_frames, stacked_observations, reward, done, info
 
     def repeat_frames(self, action, skip_frames=4):
@@ -59,3 +63,14 @@ class atari_wrapper():
 
         max_frame = obs_buffer.max(axis=0)
         return max_frame, stacked_observations, reward, done, info
+
+    def reset(self, noop_max = 30):
+        """ Do no-op action for a number of steps in [1, noop_max], to achieve random game starts.
+        """
+        self.env.reset()
+        noops = np.random.randint(1, noop_max + 1)
+        for _ in range(noops):
+            obs, _, done, _ = self.env.step(self.noop_action)
+            if done:
+                obs = self.env.reset()
+        return obs
