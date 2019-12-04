@@ -25,6 +25,32 @@ def save_q_values(array, save_file, frame):
     with open(save_file, "w") as text_file:
         text_file.write(str(array))
 
+def save_raw_data(array,save_file, frame):
+    '''
+    saves a raw state or saliency map as array and as image
+    :param array: array to be saved
+    :param save_file: file path were the data should be saved
+    :param frame: the frame index of the file
+    :return: None
+    '''
+    save_array(array,save_file, frame)
+    image = np.squeeze(array)
+    image = np.hstack((image[:, :, 0], image[:, :, 1], image[:, :, 2], image[:, :, 3]))
+    save_frame(image, save_file, frame)
+
+def get_feature_vector(model, input):
+    '''
+    returns the output of the second to last layer, which act similar to a feature vector for the DQN-network
+    :param model: the model used for prediction
+    :param input: the input for the prediction
+    :return:
+    '''
+    helper_func = keras.backend.function([model.layers[0].input],
+                                  [model.layers[-2].output])
+    features = helper_func([input])[0]
+    features = np.squeeze(features)
+    return features
+
 np.random.seed(42)
 
 #model = keras.models.load_model('models/MsPacman_500K_reward26komma9_action_only.h5')
@@ -33,7 +59,7 @@ model = keras.models.load_model('models/MsPacman_2M_2_reward47komma5_action_only
 
 model.summary()
 
-# analyzer_z = innvestigate.analyzer.LRPAlpha1Beta0IgnoreBias(model)
+analyzer_z = innvestigate.analyzer.LRPAlpha1Beta0IgnoreBias(model)
 analyzer_arg = Argmax(model)
 
 env = gym.make('MsPacmanNoFrameskip-v4')
@@ -42,10 +68,12 @@ wrapper = atari_wrapper(env)
 # wrapper.reset(noop_max=1)
 
 save_file_argmax = os.path.join('stream', 'argmax', 'argmax')
+save_file_argmax_raw = os.path.join('stream', 'raw_argmax', 'raw_argmax')
 save_file_z = os.path.join('stream', 'z_rule', 'z_rule')
 save_file_screen = os.path.join('stream', 'screen', 'screen')
 save_file_state = os.path.join('stream', 'state', 'state')
 save_file_q_values = os.path.join('stream', 'q_values', 'q_values')
+save_file_features = os.path.join('stream', 'features', 'features')
 
 if __name__ == '__main__':
     for _ in range(1500):
@@ -53,8 +81,13 @@ if __name__ == '__main__':
             action = env.action_space.sample()
         else:
             my_input = np.expand_dims(stacked_frames, axis=0)
-            output = model.predict(my_input)
-            #this output corresponds with the output in baseline if --dueling=False is correctly set for baselines.
+            output = model.predict(my_input)  #this output corresponds with the output in baseline if --dueling=False is correctly set for baselines.
+            # save model predictions
+            save_q_values(output, save_file_q_values, _)
+            features = get_feature_vector(model, my_input)
+            save_q_values(features,save_file_features,_)
+            save_array(features, save_file_features,_)
+
             action = np.argmax(np.squeeze(output))
 
             #analyzing
@@ -67,14 +100,13 @@ if __name__ == '__main__':
             # z_rule = np.squeeze(z_rule)
             # z_rule = image_utils.normalise_image(z_rule)
 
-            save_array(my_input,save_file_state, _)
-            image = np.squeeze(my_input)
-            image = np.hstack((image[:,:,0], image[:,:,1], image[:,:,2], image[:,:,3]))
-            save_frame(image,save_file_state, _)
+            #save the state
+            save_raw_data(my_input,save_file_state, _)
 
-            save_q_values(output,save_file_q_values, _)
+            #save raw saliency
+            save_raw_data(argmax, save_file_argmax_raw, _)
 
-
+            #save screen output, and screen + saliency
             for i in range(len(observations)):
                 index = str(_) + '_' + str(i)
                 observation = observations[i]
@@ -94,3 +126,4 @@ if __name__ == '__main__':
 
 image_utils.generate_video('stream/argmax/','stream/','argmax.mp4')
 image_utils.generate_video('stream/screen/','stream/','screen.mp4')
+image_utils.generate_video('stream/z_rule/','stream/','z_rule.mp4')
