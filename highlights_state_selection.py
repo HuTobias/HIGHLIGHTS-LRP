@@ -24,9 +24,9 @@ def highlights(state_importance_df, budget, context_length, minimum_gap):
 
         state_index = row['state']
         index_in_summary = bisect(summary_states, state_index)
-        print('state: ', state_index)
-        print('index in summary: ', index_in_summary)
-        print('summary: ', summary_states)
+        # print('state: ', state_index)
+        # print('index in summary: ', index_in_summary)
+        # print('summary: ', summary_states)
         state_before = None
         state_after = None
         if index_in_summary > 0:
