@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 
-def highlights(state_importance_df, budget):
+def highlights(state_importance_df, budget, context_length):
     top_states = state_importance_df.nlargest(budget, 'importance')['state'].values
     return top_states
 
@@ -13,6 +13,10 @@ def compute_states_importance(states_q_values_df):
     return states_q_values_df
 
 def read_q_value_files(path):
+    ''' reading q values from files. Assume each state is a seperate text file with a list of q values
+    :param path: path to the directory where the text files are stored
+    :return: a pandas dataframe with two columns: state (index) and q_values (numpy array)
+    '''
     states = []
     q_values_list = []
     for filename in os.listdir(path):
