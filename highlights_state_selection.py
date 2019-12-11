@@ -46,8 +46,11 @@ def highlights(state_importance_df, budget, context_length, minimum_gap):
     return summary_states
 
 
-def compute_states_importance(states_q_values_df):
-    states_q_values_df['importance'] = states_q_values_df['q_values'].apply(lambda x: np.max(x)-np.min(x))
+def compute_states_importance(states_q_values_df, compare_to='worst'):
+    if compare_to == 'worst':
+        states_q_values_df['importance'] = states_q_values_df['q_values'].apply(lambda x: np.max(x)-np.min(x))
+    elif compare_to == 'second':
+        states_q_values_df['importance'] = states_q_values_df['q_values'].apply(lambda x: np.max(x)-np.partition(x.flatten(), -2)[-2])
     return states_q_values_df
 
 def read_q_value_files(path):
@@ -74,10 +77,10 @@ if __name__ == '__main__':
     # test_data = pd.DataFrame({'state':[1,2,3],'q_values':[[1,2,3],[1,1,1],[2,1,1]]})
     # # print(highlights(test_data,2))
     # q_values_df = read_q_value_files('q_values')
-    # states_q_values_df = compute_states_importance(q_values_df)
-    # print(highlights(highlights,20,10,10))
-    # states_q_values_df.to_csv('states_importance.csv')
-    states_q_values_df = pd.read_csv('states_importance.csv')
+    # states_q_values_df = compute_states_importance(q_values_df, compare_to='second')
+    # # print(highlights(highlights,20,10,10))
+    # states_q_values_df.to_csv('states_importance_second.csv')
+    states_q_values_df = pd.read_csv('states_importance_second.csv')
     print(highlights(states_q_values_df,20,10,10))
     # a = [1,4,6,10]
     # print(bisect(a,7))
