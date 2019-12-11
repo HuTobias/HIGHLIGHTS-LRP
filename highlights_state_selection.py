@@ -3,7 +3,7 @@ import pandas as pd
 import os
 from bisect import bisect
 from bisect import insort_left
-
+import image_utils
 
 def highlights(state_importance_df, budget, context_length, minimum_gap):
     ''' generate highlights summary
@@ -43,7 +43,10 @@ def highlights(state_importance_df, budget, context_length, minimum_gap):
         if len(summary_states) == budget:
             break
 
-    return summary_states
+    summary_states_with_context = []
+    for state in summary_states:
+        summary_states_with_context.extend((range(state-context_length,state+context_length)))
+    return summary_states, summary_states_with_context
 
 
 def compute_states_importance(states_q_values_df, compare_to='worst'):
@@ -81,6 +84,11 @@ if __name__ == '__main__':
     # # print(highlights(highlights,20,10,10))
     # states_q_values_df.to_csv('states_importance_second.csv')
     states_q_values_df = pd.read_csv('states_importance_second.csv')
-    print(highlights(states_q_values_df,20,10,10))
+
+    summary_states, summary_states_with_context = highlights(states_q_values_df,20,10,10)
     # a = [1,4,6,10]
+    # a.extend(range(20,30))
+    # print(a)
     # print(bisect(a,7))
+
+    image_utils.generate_video('stream/argmax/','stream/','highlights_argmax.mp4', image_indices=summary_states_with_context)

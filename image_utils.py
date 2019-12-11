@@ -91,11 +91,12 @@ def show_image(image):
     plt.imshow(image)
     plt.show()
 
-def generate_video(image_folder, out_path, name="video.mp4"):
+def generate_video(image_folder, out_path, name="video.mp4", image_indices=None):
     ''' creates a video from all images in a folder
     :param image_folder: folder containing the images
     :param out_path: output folder for the video
     :param name: name of the output video
+    :param image_indices: states to be included in the summary video
     :return: nothing, but saves the video in the given path
     '''
     images = [img for img in os.listdir(image_folder)]
@@ -107,14 +108,20 @@ def generate_video(image_folder, out_path, name="video.mp4"):
 
 
     for image in images:
+        to_write = False
         try:
-            i = cv2.imread(os.path.join(image_folder, image))
-            i = cv2.resize(i, (width,height))
+            image_str = image.split('_')
+            state_index = int(image_str[1])
+            if (state_index in image_indices) or (image_indices is None):
+                i = cv2.imread(os.path.join(image_folder, image))
+                i = cv2.resize(i, (width,height))
+                to_write = True
         except Exception as e:
             print(e)
             print('Try next image.')
             continue
-        video.write(i)
+        if to_write:
+            video.write(i)
 
     cv2.destroyAllWindows()
     video.release()
