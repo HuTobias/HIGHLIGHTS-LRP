@@ -5,6 +5,49 @@ from bisect import bisect
 from bisect import insort_left
 import image_utils
 
+
+def random_state_selection(state_importance_df, budget, context_length, minimum_gap):
+    ''' generate random summary
+    :param state_importance_df: dataframe with 2 columns: state and importance score of the state
+    :param budget: allowed length of summary - note this includes only the important states, it doesn't count context
+    around them
+    :param context_length: how many states to show around the chosen important state (e.g., if context_lenght=10, we
+    will show 10 states before and 10 states after the important state
+    :param minimum_gap: how many states should we skip after showing the context for an important state. For example, if
+    we chose state 200, and the context length is 10, we will show states 189-211. If minimum_gap=10, we will not
+    consider states 212-222 and states 178-198 because they are too close
+    :return: a list with the indices of the randomly chosen states, and a list with all summary states (includes the context)
+    '''
+    shuffled_states = state_importance_df.sample(frac=1.0)
+    summary_states = []
+    for index, row in shuffled_states.iterrows():
+
+        state_index = row['state']
+        index_in_summary = bisect(summary_states, state_index)
+        # print('state: ', state_index)
+        # print('index in summary: ', index_in_summary)
+        # print('summary: ', summary_states)
+        state_before = None
+        state_after = None
+        if index_in_summary > 0:
+            state_before = summary_states[index_in_summary-1]
+        if index_in_summary < len(summary_states):
+            state_after = summary_states[index_in_summary]
+        if state_after is not None:
+            if state_index+context_length+minimum_gap > state_after:
+                continue
+        if state_before is not None:
+            if state_index-context_length-minimum_gap < state_before:
+                continue
+        insort_left(summary_states,state_index)
+        if len(summary_states) == budget:
+            break
+
+    summary_states_with_context = []
+    for state in summary_states:
+        summary_states_with_context.extend((range(state-context_length,state+context_length)))
+    return summary_states, summary_states_with_context
+
 def highlights(state_importance_df, budget, context_length, minimum_gap):
     ''' generate highlights summary
     :param state_importance_df: dataframe with 2 columns: state and importance score of the state
@@ -15,8 +58,7 @@ def highlights(state_importance_df, budget, context_length, minimum_gap):
     :param minimum_gap: how many states should we skip after showing the context for an important state. For example, if
     we chose state 200, and the context length is 10, we will show states 189-211. If minimum_gap=10, we will not
     consider states 212-222 and states 178-198 because they are too close
-    :return: a list with the indices of the important states. Note, it currently doesn't return the indices for the
-    context around them, we can add that here or handle it when we create the visual summary
+    :return: a list with the indices of the important states, and a list with all summary states (includes the context)
     '''
     sorted_df = state_importance_df.sort_values(['importance'], ascending=False)
     summary_states = []
@@ -85,10 +127,12 @@ if __name__ == '__main__':
     # states_q_values_df.to_csv('states_importance_second.csv')
     states_q_values_df = pd.read_csv('states_importance_second.csv')
 
-    summary_states, summary_states_with_context = highlights(states_q_values_df,20,10,10)
+    # summary_states, summary_states_with_context = highlights(states_q_values_df,20,10,10)
+    for i in range(10):
+        summary_states, summary_states_with_context = random_state_selection(states_q_values_df,20,10,10)
     # a = [1,4,6,10]
     # a.extend(range(20,30))
     # print(a)
     # print(bisect(a,7))
 
-    image_utils.generate_video('stream/argmax/','stream/','highlights_argmax.mp4', image_indices=summary_states_with_context)
+        image_utils.generate_video('stream/argmax/','stream/','random_summary' +'_' +str(i) + '.mp4', image_indices=summary_states_with_context)
