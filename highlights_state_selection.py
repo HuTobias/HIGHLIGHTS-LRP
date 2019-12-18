@@ -4,7 +4,8 @@ import os
 from bisect import bisect
 from bisect import insort_left
 import image_utils
-import pickle as pkl
+from scipy.spatial import distance
+
 
 
 def random_state_selection(state_importance_df, budget, context_length, minimum_gap):
@@ -94,24 +95,23 @@ def highlights(state_importance_df, budget, context_length, minimum_gap):
 
 
 def find_similar_state_in_summary(state_importance_df, summary_states, new_state, distance_metric, distance_threshold=None):
-    most_similar_state = -1
+    most_similar_state = None
     minimal_distance = 10000000
-    i = 0
     for state in summary_states:
-        distance = distance_metric(state, new_state)
+        state_features = state_importance_df.loc[state_importance_df['state'] == state].iloc[0].features
+        distance = distance_metric(state_features, new_state)
         if distance < minimal_distance:
             minimal_distance = distance
-            most_similar_state = i
-        i += 1
+            most_similar_state = state
     if distance_threshold is None:
-        return most_similar_state
+        return most_similar_state, minimal_distance
     elif minimal_distance < distance_threshold:
-        return most_similar_state
+        return most_similar_state, minimal_distance
     return None
 
 
-def highlights_div(state_importance_df, budget, context_length, minimum_gap, distance_metric=None):
-    ''' generate highlights summary
+def highlights_div(state_importance_df, budget, context_length, minimum_gap, distance_metric=distance.euclidean, percentile_threshold=5):
+    ''' generate highlights-div  summary
     :param state_importance_df: dataframe with 2 columns: state and importance score of the state
     :param budget: allowed length of summary - note this includes only the important states, it doesn't count context
     around them
@@ -120,10 +120,22 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
     :param minimum_gap: how many states should we skip after showing the context for an important state. For example, if
     we chose state 200, and the context length is 10, we will show states 189-211. If minimum_gap=10, we will not
     consider states 212-222 and states 178-198 because they are too close
+    :param distance_metric: metric to use for comparing states (function)
+    :param percentile_threshold: what minimal distance to allow between states in summary 
     :return: a list with the indices of the important states, and a list with all summary states (includes the context)
     '''
+
+    state_features = state_importance_df['features'].values
+    distances = []
+    for i in range(len(state_features-1)):
+        for j in range(i+1,len(state_features)):
+            distances.append(distance_metric(state_features[i],state_features[j]))
+    distances = np.array(distances)
+    threshold = np.percentile(distances,percentile_threshold)
+
     sorted_df = state_importance_df.sort_values(['importance'], ascending=False)
     summary_states = []
+    num_chosen_states = 0
     for index, row in sorted_df.iterrows():
         state_index = row['state']
         index_in_summary = bisect(summary_states, state_index)
@@ -143,15 +155,31 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
             if state_index-context_length-minimum_gap < state_before:
                 continue
 
+        # if num_chosen_states < budget:
+        #     insort_left(summary_states,state_index)
+        #     num_chosen_states += 1
+
+
         # compare to most similar state
-        most_similar_state = find_similar_state_in_summary(state_importance_df, summary_states, row['state_features'],
+        most_similar_state, min_distance = find_similar_state_in_summary(state_importance_df, summary_states, row['features'],
                                                            distance_metric)
         if most_similar_state is None:
             insort_left(summary_states,state_index)
-        # elif row['importance'] > state_importance_df.:
-        #
-        # if len(summary_states) == budget:
-        #     break
+            num_chosen_states += 1
+
+        else:
+            # similar_state_importance = state_importance_df.loc[state_importance_df['state'] == most_similar_state].iloc[0].importance
+            # if row['importance'] > similar_state_importance:
+            if min_distance > threshold:
+                insort_left(summary_states,state_index)
+                num_chosen_states += 1
+                # print('took')
+            # else:
+            #     print(state_index)
+            #     print('skipped')
+
+        if len(summary_states) == budget:
+            break
 
     summary_states_with_context = []
     for state in summary_states:
@@ -219,20 +247,36 @@ if __name__ == '__main__':
     # states_q_values_df = compute_states_importance(q_values_df, compare_to='second')
     # # print(highlights(highlights,20,10,10))
     # states_q_values_df.to_csv('states_importance_second.csv')
-    states_q_values_df = pd.read_csv('states_importance_second.csv')
-    # features_df = read_feature_files('stream/features')
-    # features_df.to_csv('state_features.csv')
-    features_df = pd.read_csv('state_features.csv')
-    state_features_importance_df = pd.merge(states_q_values_df, features_df,on='state')
-    state_features_importance_df = state_features_importance_df[['state','q_values','importance','features']]
-    state_features_importance_df.to_csv('state_features_impoartance.csv')
-    exit()
+    # a = np.array([1, 2, 3])
+    # b = np.array([4, 5, 6])
+    # print(distance.cosine(a,b))
+    # exit()
+    # states_q_values_df = pd.read_csv('states_importance_second.csv')
+    # # features_df = read_feature_files('stream/features')
+    # # features_df.to_csv('state_features.csv')
+    # features_df = pd.read_csv('state_features.csv')
+    # state_features_importance_df = pd.merge(states_q_values_df, features_df,on='state')
+    # state_features_importance_df = state_features_importance_df[['state','q_values','importance','features']]
+    # state_features_importance_df.to_csv('state_features_impoartance.csv')
+    state_features_importance_df = pd.read_csv('state_features_impoartance.csv')
+    state_features_importance_df['features'] = state_features_importance_df['features'].apply(lambda x:
+                           np.fromstring(
+                               x.replace('\n','')
+                                .replace('[','')
+                                .replace(']','')
+                                .replace('  ',' '), sep=' '))
+    summary_states, summary_states_with_context = highlights_div(state_features_importance_df, 15,10,10)
+    print('div:' ,summary_states)
+    image_utils.generate_video('stream/argmax/','stream/','highlights_div_15_10_10.mp4', image_indices=summary_states_with_context)
+    summary_states, summary_states_with_context = highlights(state_features_importance_df, 15,10,10)
+    print('reg', summary_states)
+    image_utils.generate_video('stream/argmax/','stream/','highlights_reg_15_10_10.mp4', image_indices=summary_states_with_context)
+    # exit()
     # summary_states, summary_states_with_context = highlights(states_q_values_df,20,10,10)
-    for i in range(10):
-        summary_states, summary_states_with_context = random_state_selection(states_q_values_df,20,10,10)
+
     # a = [1,4,6,10]
     # a.extend(range(20,30))
     # print(a)
     # print(bisect(a,7))
 
-        image_utils.generate_video('stream/argmax/','stream/','random_summary' +'_' +str(i) + '.mp4', image_indices=summary_states_with_context)
+    # image_utils.generate_video('stream/argmax/','stream/','random_summary' +'_' +str(i) + '.mp4', image_indices=summary_states_with_context)
