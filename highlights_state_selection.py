@@ -4,6 +4,7 @@ import os
 from bisect import bisect
 from bisect import insort_left
 import image_utils
+import pickle as pkl
 
 
 def random_state_selection(state_importance_df, budget, context_length, minimum_gap):
@@ -91,6 +92,73 @@ def highlights(state_importance_df, budget, context_length, minimum_gap):
     return summary_states, summary_states_with_context
 
 
+
+def find_similar_state_in_summary(state_importance_df, summary_states, new_state, distance_metric, distance_threshold=None):
+    most_similar_state = -1
+    minimal_distance = 10000000
+    i = 0
+    for state in summary_states:
+        distance = distance_metric(state, new_state)
+        if distance < minimal_distance:
+            minimal_distance = distance
+            most_similar_state = i
+        i += 1
+    if distance_threshold is None:
+        return most_similar_state
+    elif minimal_distance < distance_threshold:
+        return most_similar_state
+    return None
+
+
+def highlights_div(state_importance_df, budget, context_length, minimum_gap, distance_metric=None):
+    ''' generate highlights summary
+    :param state_importance_df: dataframe with 2 columns: state and importance score of the state
+    :param budget: allowed length of summary - note this includes only the important states, it doesn't count context
+    around them
+    :param context_length: how many states to show around the chosen important state (e.g., if context_lenght=10, we
+    will show 10 states before and 10 states after the important state
+    :param minimum_gap: how many states should we skip after showing the context for an important state. For example, if
+    we chose state 200, and the context length is 10, we will show states 189-211. If minimum_gap=10, we will not
+    consider states 212-222 and states 178-198 because they are too close
+    :return: a list with the indices of the important states, and a list with all summary states (includes the context)
+    '''
+    sorted_df = state_importance_df.sort_values(['importance'], ascending=False)
+    summary_states = []
+    for index, row in sorted_df.iterrows():
+        state_index = row['state']
+        index_in_summary = bisect(summary_states, state_index)
+        # print('state: ', state_index)
+        # print('index in summary: ', index_in_summary)
+        # print('summary: ', summary_states)
+        state_before = None
+        state_after = None
+        if index_in_summary > 0:
+            state_before = summary_states[index_in_summary-1]
+        if index_in_summary < len(summary_states):
+            state_after = summary_states[index_in_summary]
+        if state_after is not None:
+            if state_index+context_length+minimum_gap > state_after:
+                continue
+        if state_before is not None:
+            if state_index-context_length-minimum_gap < state_before:
+                continue
+
+        # compare to most similar state
+        most_similar_state = find_similar_state_in_summary(state_importance_df, summary_states, row['state_features'],
+                                                           distance_metric)
+        if most_similar_state is None:
+            insort_left(summary_states,state_index)
+        # elif row['importance'] > state_importance_df.:
+        #
+        # if len(summary_states) == budget:
+        #     break
+
+    summary_states_with_context = []
+    for state in summary_states:
+        summary_states_with_context.extend((range(state-context_length,state+context_length)))
+    return summary_states, summary_states_with_context
+
+
 def compute_states_importance(states_q_values_df, compare_to='worst'):
     if compare_to == 'worst':
         states_q_values_df['importance'] = states_q_values_df['q_values'].apply(lambda x: np.max(x)-np.min(x))
@@ -118,6 +186,32 @@ def read_q_value_files(path):
     q_values_df = pd.DataFrame({'state':states, 'q_values':q_values_list})
     return q_values_df
 
+
+def read_feature_files(path):
+    ''' reading state features from files. Assume each state is a seperate text file with a feature vector
+    :param path: path to the directory where the text files are stored
+    :return: a pandas dataframe with two columns: state (index) and q_values (numpy array)
+    '''
+    states = []
+    feature_vector_list = []
+    for filename in os.listdir(path):
+        if not filename.endswith('.txt'):  # skip text files, use npy files
+            continue
+        file_split = filename.split('_')
+        state_index = int(file_split[len(file_split)-1][:-4])
+        states.append(state_index)
+        # print(filename)
+        with open(path+'/'+filename, 'r') as feature_file:
+            features_text = str.strip(feature_file.read(),'[]')
+            features_text = features_text.replace('\n', ' ')
+            features_text = ' '.join(features_text.split())
+            feature_vector = np.fromstring(features_text, dtype=float, sep=' ')
+            feature_vector_list.append(feature_vector)
+
+    state_features_df = pd.DataFrame({'state':states, 'features':feature_vector_list})
+    return state_features_df
+
+
 if __name__ == '__main__':
     # test_data = pd.DataFrame({'state':[1,2,3],'q_values':[[1,2,3],[1,1,1],[2,1,1]]})
     # # print(highlights(test_data,2))
@@ -126,7 +220,13 @@ if __name__ == '__main__':
     # # print(highlights(highlights,20,10,10))
     # states_q_values_df.to_csv('states_importance_second.csv')
     states_q_values_df = pd.read_csv('states_importance_second.csv')
-
+    # features_df = read_feature_files('stream/features')
+    # features_df.to_csv('state_features.csv')
+    features_df = pd.read_csv('state_features.csv')
+    state_features_importance_df = pd.merge(states_q_values_df, features_df,on='state')
+    state_features_importance_df = state_features_importance_df[['state','q_values','importance','features']]
+    state_features_importance_df.to_csv('state_features_impoartance.csv')
+    exit()
     # summary_states, summary_states_with_context = highlights(states_q_values_df,20,10,10)
     for i in range(10):
         summary_states, summary_states_with_context = random_state_selection(states_q_values_df,20,10,10)
