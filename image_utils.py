@@ -91,7 +91,19 @@ def show_image(image):
     plt.imshow(image)
     plt.show()
 
-def generate_video(image_folder, out_path, name="video.mp4", image_indices=None):
+def crop_image_button(image,pixels=225):
+    '''
+    cuts the last *pixels* rows of pixels from an image
+    :param image: the image to be cropped
+    :param pixels: number of pixels to cut
+    :return: the cropped image
+    '''
+    image_length = image.shape[0]
+    crop = image[0:image_length - pixels,:, :]
+    return crop
+
+
+def generate_video(image_folder, out_path, name="video.mp4", image_indices=None, crop_images = True):
     ''' creates a video from all images in a folder
     :param image_folder: folder containing the images
     :param out_path: output folder for the video
@@ -114,6 +126,8 @@ def generate_video(image_folder, out_path, name="video.mp4", image_indices=None)
             state_index = int(image_str[1])
             if (state_index in image_indices) or (image_indices is None):
                 i = cv2.imread(os.path.join(image_folder, image))
+                if crop_images:
+                    i = crop_image_button(i)
                 i = cv2.resize(i, (width,height))
                 to_write = True
         except Exception as e:
@@ -133,5 +147,12 @@ def natural_sort( l ):
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
     l.sort( key=alphanum_key )
     return l
+
+
+# test = cv2. imread('stream_1M/argmax/argmax_4_0.png')
+# test = crop_image_button(test,225)
+# show_image(test)
+# pass
+
 
 

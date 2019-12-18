@@ -8,6 +8,10 @@ import os
 import image_utils
 from argmax_analyzer import Argmax
 
+#Quickfix
+import os
+os.environ["CUDA_VISIBLE_DEVICES"]="-1"
+
 def save_frame(array, save_file, frame):
     if not (os.path.isdir(save_file)):
         os.makedirs(save_file)
@@ -53,9 +57,11 @@ def get_feature_vector(model, input):
 
 np.random.seed(42)
 
-#model = keras.models.load_model('models/MsPacman_500K_reward26komma9_action_only.h5')
+model = keras.models.load_model('models/MsPacman_500K_reward26komma9_action_only.h5')
 #model = keras.models.load_model('models/MsPacman_1M_reward36komma3_action_only.h5')
-model = keras.models.load_model('models/MsPacman_2M_2_reward47komma5_action_only.h5')
+#model = keras.models.load_model('models/MsPacman_2M_2_reward47komma5_action_only.h5')
+
+steps = 10000
 
 model.summary()
 
@@ -76,7 +82,7 @@ save_file_q_values = os.path.join('stream', 'q_values', 'q_values')
 save_file_features = os.path.join('stream', 'features', 'features')
 
 if __name__ == '__main__':
-    for _ in range(1500):
+    for _ in range(steps):
         if _ < 4:
             action = env.action_space.sample()
         else:
@@ -93,6 +99,9 @@ if __name__ == '__main__':
             #analyzing
             argmax = analyzer_arg.analyze(my_input)
             argmax = np.squeeze(argmax)
+            # save raw saliency
+            save_raw_data(argmax, save_file_argmax_raw, _)
+            # scale saliency
             argmax = image_utils.normalise_image(argmax)
 
             # for future work
@@ -102,9 +111,6 @@ if __name__ == '__main__':
 
             #save the state
             save_raw_data(my_input,save_file_state, _)
-
-            #save raw saliency
-            save_raw_data(argmax, save_file_argmax_raw, _)
 
             #save screen output, and screen + saliency
             for i in range(len(observations)):
@@ -124,6 +130,6 @@ if __name__ == '__main__':
         stacked_frames, observations, reward, done, info = wrapper.step(action)
         env.render()
 
-image_utils.generate_video('stream/argmax/','stream/','argmax.mp4')
-image_utils.generate_video('stream/screen/','stream/','screen.mp4')
-image_utils.generate_video('stream/z_rule/','stream/','z_rule.mp4')
+# image_utils.generate_video('stream/argmax/','stream/','argmax.mp4')
+# image_utils.generate_video('stream/screen/','stream/','screen.mp4')
+#image_utils.generate_video('stream/z_rule/','stream/','z_rule.mp4')
