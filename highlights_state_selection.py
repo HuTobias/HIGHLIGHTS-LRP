@@ -241,23 +241,27 @@ def read_feature_files(path):
 
 
 if __name__ == '__main__':
+    # image_folder = 'stream/argmax/'
+    # video_folder = 'stream/'
+
+
     # test_data = pd.DataFrame({'state':[1,2,3],'q_values':[[1,2,3],[1,1,1],[2,1,1]]})
     # # print(highlights(test_data,2))
-    # q_values_df = read_q_value_files('q_values')
+    # q_values_df = read_q_value_files('stream/q_values')
     # states_q_values_df = compute_states_importance(q_values_df, compare_to='second')
     # # print(highlights(highlights,20,10,10))
     # states_q_values_df.to_csv('states_importance_second.csv')
-    # a = np.array([1, 2, 3])
-    # b = np.array([4, 5, 6])
-    # print(distance.cosine(a,b))
-    # exit()
-    # states_q_values_df = pd.read_csv('states_importance_second.csv')
-    # # features_df = read_feature_files('stream/features')
-    # # features_df.to_csv('state_features.csv')
-    # features_df = pd.read_csv('state_features.csv')
-    # state_features_importance_df = pd.merge(states_q_values_df, features_df,on='state')
-    # state_features_importance_df = state_features_importance_df[['state','q_values','importance','features']]
-    # state_features_importance_df.to_csv('state_features_impoartance.csv')
+    # # a = np.array([1, 2, 3])
+    # # b = np.array([4, 5, 6])
+    # # print(distance.cosine(a,b))
+    # # exit()
+    states_q_values_df = pd.read_csv('states_importance_second.csv')
+    features_df = read_feature_files('stream/features')
+    features_df.to_csv('state_features.csv')
+    features_df = pd.read_csv('state_features.csv')
+    state_features_importance_df = pd.merge(states_q_values_df, features_df,on='state')
+    state_features_importance_df = state_features_importance_df[['state','q_values','importance','features']]
+    state_features_importance_df.to_csv('state_features_impoartance.csv')
     state_features_importance_df = pd.read_csv('state_features_impoartance.csv')
     state_features_importance_df['features'] = state_features_importance_df['features'].apply(lambda x:
                            np.fromstring(

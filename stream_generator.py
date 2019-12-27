@@ -118,7 +118,7 @@ if __name__ == '__main__':
                 observation = observations[i]
                 save_frame(observation, save_file_screen, index)
                 observation = image_utils.normalise_image(observation)
-                saliency = image_utils.output_saliency_map(argmax[:, :, 3], observation, 6,edges=False)
+                saliency = image_utils.output_saliency_map(argmax[:, :, 3], observation,edges=False) #in the last stream generation we used scale_factor 6 which scaled the images to much
                 save_frame(saliency, save_file_argmax, index)
 
                 # for future work

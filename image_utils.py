@@ -113,7 +113,7 @@ def generate_video(image_folder, out_path, name="video.mp4", image_indices=None,
     '''
     images = [img for img in os.listdir(image_folder)]
     images = natural_sort(images)
-    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+    fourcc = cv2.VideoWriter_fourcc(*'H264') #important for browser support, MP4V is not working with browsers
     fps = 60
     height, width, layers = 420,320,3
     video = cv2.VideoWriter(out_path + name, fourcc, fps, (width,height))
