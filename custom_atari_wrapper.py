@@ -74,3 +74,18 @@ class atari_wrapper():
             if done:
                 obs = self.env.reset()
         return obs
+
+    def fixed_reset(self, step_number, action):
+        '''
+        Create a fixed starting position for the environment by doing *action* for *step_number* steps
+        :param step_number: number of steps to be done at the beginning of the game
+        :param action: action to be done at the start of the game
+        :return: obs at the end of the starting sequence
+        '''
+        self.env.reset()
+        for _ in range(step_number):
+            obs, _, done, _ = self.env.step(action)
+            self.env.render()
+            if done:
+                obs = self.env.reset()
+        return obs

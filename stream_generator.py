@@ -55,36 +55,43 @@ def get_feature_vector(model, input):
     features = np.squeeze(features)
     return features
 
-np.random.seed(42)
-
-model = keras.models.load_model('models/MsPacman_500K_reward26komma9_action_only.h5')
-#model = keras.models.load_model('models/MsPacman_1M_reward36komma3_action_only.h5')
-#model = keras.models.load_model('models/MsPacman_2M_2_reward47komma5_action_only.h5')
-
-steps = 10000
-
-model.summary()
-
-analyzer_z = innvestigate.analyzer.LRPAlpha1Beta0IgnoreBias(model)
-analyzer_arg = Argmax(model)
-
-env = gym.make('MsPacmanNoFrameskip-v4')
-env.reset()
-wrapper = atari_wrapper(env)
-# wrapper.reset(noop_max=1)
-
-save_file_argmax = os.path.join('stream', 'argmax', 'argmax')
-save_file_argmax_raw = os.path.join('stream', 'raw_argmax', 'raw_argmax')
-save_file_z = os.path.join('stream', 'z_rule', 'z_rule')
-save_file_screen = os.path.join('stream', 'screen', 'screen')
-save_file_state = os.path.join('stream', 'state', 'state')
-save_file_q_values = os.path.join('stream', 'q_values', 'q_values')
-save_file_features = os.path.join('stream', 'features', 'features')
-
 if __name__ == '__main__':
+    #use a different start to get states outside of the highlights stream
+    fixed_start = True
+
+    np.random.seed(42)
+
+    # model = keras.models.load_model('models/MsPacman_500K_reward26komma9_action_only.h5')
+    # model = keras.models.load_model('models/MsPacman_1M_reward36komma3_action_only.h5')
+    model = keras.models.load_model('models/MsPacman_2M_2_reward47komma5_action_only.h5')
+
+    steps = 10000
+
+    model.summary()
+
+    analyzer_z = innvestigate.analyzer.LRPAlpha1Beta0IgnoreBias(model)
+    analyzer_arg = Argmax(model)
+
+    env = gym.make('MsPacmanNoFrameskip-v4')
+    env.reset()
+    wrapper = atari_wrapper(env)
+    if fixed_start :
+        wrapper.fixed_reset(300,3) #used  action 3 and 4
+
+    save_file_argmax = os.path.join('stream', 'argmax', 'argmax')
+    save_file_argmax_raw = os.path.join('stream', 'raw_argmax', 'raw_argmax')
+    save_file_z = os.path.join('stream', 'z_rule', 'z_rule')
+    save_file_screen = os.path.join('stream', 'screen', 'screen')
+    save_file_state = os.path.join('stream', 'state', 'state')
+    save_file_q_values = os.path.join('stream', 'q_values', 'q_values')
+    save_file_features = os.path.join('stream', 'features', 'features')
+
     for _ in range(steps):
         if _ < 4:
             action = env.action_space.sample()
+            # to have more controll over the fixed starts
+            if fixed_start:
+                action=0
         else:
             my_input = np.expand_dims(stacked_frames, axis=0)
             output = model.predict(my_input)  #this output corresponds with the output in baseline if --dueling=False is correctly set for baselines.

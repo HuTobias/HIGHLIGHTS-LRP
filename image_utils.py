@@ -91,14 +91,15 @@ def show_image(image):
     plt.imshow(image)
     plt.show()
 
-def crop_image_button(image,pixels=225):
+def crop_image_button(image, part = 0.18 ):
     '''
-    cuts the last *pixels* rows of pixels from an image
+    cuts the lower *part* from an image
     :param image: the image to be cropped
-    :param pixels: number of pixels to cut
+    :param part: part of the image to be cut (expects floats between 0 and 1)
     :return: the cropped image
     '''
     image_length = image.shape[0]
+    pixels = int(image_length * part)
     crop = image[0:image_length - pixels,:, :]
     return crop
 
@@ -114,10 +115,12 @@ def generate_video(image_folder, out_path, name="video.mp4", image_indices=None,
     images = [img for img in os.listdir(image_folder)]
     images = natural_sort(images)
     fourcc = cv2.VideoWriter_fourcc(*'H264') #important for browser support, MP4V is not working with browsers
-    fps = 60
+    fps = 30
     height, width, layers = 420,320,3
     video = cv2.VideoWriter(out_path + name, fourcc, fps, (width,height))
-
+    old_state_index = None
+    black_frame = np.zeros((height, width, layers),np.uint8)
+    black_frame_number = int(fps/2)
 
     for image in images:
         to_write = False
@@ -125,6 +128,13 @@ def generate_video(image_folder, out_path, name="video.mp4", image_indices=None,
             image_str = image.split('_')
             state_index = int(image_str[1])
             if (state_index in image_indices) or (image_indices is None):
+
+                #check if the states are successive and insert black frames, if the are not
+                if old_state_index != None and state_index != old_state_index + 1 and state_index != old_state_index:
+                    for n in range(black_frame_number):
+                        video.write(black_frame)
+                old_state_index = state_index
+
                 i = cv2.imread(os.path.join(image_folder, image))
                 if crop_images:
                     i = crop_image_button(i)
@@ -149,10 +159,11 @@ def natural_sort( l ):
     return l
 
 
-# test = cv2. imread('stream_1M/argmax/argmax_4_0.png')
-# test = crop_image_button(test,225)
-# show_image(test)
-# pass
+#test = cv2.imread('stream_1M/test/c0/c0_4_0.png')
+#test = crop_image_button(test, 0.18)
+#show_image(test)
+
+#pass
 
 
 
