@@ -10,13 +10,13 @@ if __name__ == '__main__':
 
     def help_function(stream_folder):
         trajectories = 10
-        pre_context = 10
-        post_context = 10
-        parameter_string = str(trajectories) + '_' + str(pre_context) + '_' + str(post_context)
+        context = 10
+        minimum_gap = 10
+        parameter_string = str(trajectories) + '_' + str(context) + '_' + str(minimum_gap)
         video_folder = os.path.join(stream_folder,'smooth_vid/')
 
         q_values_df = read_q_value_files(stream_folder + '/q_values')
-        states_q_values_df = compute_states_importance(q_values_df, compare_to='worst')
+        states_q_values_df = compute_states_importance(q_values_df, compare_to='second')
         states_q_values_df.to_csv(stream_folder + '/states_importance_second.csv')
         states_q_values_df = pd.read_csv(stream_folder + '/states_importance_second.csv')
         features_df = read_feature_files(stream_folder + '/features')
@@ -37,13 +37,13 @@ if __name__ == '__main__':
                                                                                                       sep=' '))
 
         summary_states, summary_states_with_context = highlights_div(state_features_importance_df, trajectories,
-                                                                     pre_context, post_context)
+                                                                     context, minimum_gap)
         with open(stream_folder + '/summary_states.txt', "w") as text_file:
             text_file.write(str(summary_states))
         np.save(stream_folder + '/summary_states_with_context.npy', summary_states_with_context)
 
         random_states, random_states_with_context = random_state_selection(state_features_importance_df, trajectories,
-                                                                           pre_context, post_context)
+                                                                           context, minimum_gap)
 
         image_folder = os.path.join(stream_folder, 'test/argmax_smooth/')
         video_name = 'highlights_div_lrp_' + parameter_string + '.mp4'
