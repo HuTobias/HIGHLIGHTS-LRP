@@ -16,16 +16,16 @@ if __name__ == '__main__':
         video_folder = os.path.join(stream_folder,'smooth_vid/')
 
         q_values_df = read_q_value_files(stream_folder + '/q_values')
-        states_q_values_df = compute_states_importance(q_values_df, compare_to='second')
+        states_q_values_df = compute_states_importance(q_values_df, compare_to='worst')
         states_q_values_df.to_csv(stream_folder + '/states_importance_second.csv')
-        # states_q_values_df = pd.read_csv('states_importance_second.csv')
+        states_q_values_df = pd.read_csv(stream_folder + '/states_importance_second.csv')
         features_df = read_feature_files(stream_folder + '/features')
         features_df.to_csv(stream_folder + '/state_features.csv')
-        # features_df = pd.read_csv('state_features.csv')
+        features_df = pd.read_csv(stream_folder + '/state_features.csv')
         state_features_importance_df = pd.merge(states_q_values_df, features_df, on='state')
         state_features_importance_df = state_features_importance_df[['state', 'q_values', 'importance', 'features']]
         state_features_importance_df.to_csv(stream_folder + '/state_features_impoartance.csv')
-        #state_features_importance_df = pd.read_csv('state_features_impoartance.csv')
+        state_features_importance_df = pd.read_csv(stream_folder + '/state_features_impoartance.csv')
 
         state_features_importance_df['features'] = state_features_importance_df['features'].apply(lambda x:
                                                                                                   np.fromstring(
