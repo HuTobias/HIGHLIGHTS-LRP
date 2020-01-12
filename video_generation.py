@@ -1,7 +1,7 @@
 import pandas as pd
 import image_utils
 import numpy as np
-from highlights_state_selection import highlights, highlights_div, random_state_selection
+from highlights_state_selection import read_q_value_files, read_feature_files, compute_states_importance, highlights_div, random_state_selection
 import os
 
 #utility script to generate all summarys at once
@@ -9,10 +9,24 @@ import os
 if __name__ == '__main__':
 
     def help_function(stream_folder):
+        trajectories = 10
+        pre_context = 10
+        post_context = 10
+        parameter_string = str(trajectories) + '_' + str(pre_context) + '_' + str(post_context)
         video_folder = os.path.join(stream_folder,'smooth_vid/')
-        states_importance = 'state_features_importance.csv'
 
-        state_features_importance_df = pd.read_csv(states_importance)
+        q_values_df = read_q_value_files(stream_folder + '/q_values')
+        states_q_values_df = compute_states_importance(q_values_df, compare_to='second')
+        states_q_values_df.to_csv(stream_folder + '/states_importance_second.csv')
+        # states_q_values_df = pd.read_csv('states_importance_second.csv')
+        features_df = read_feature_files(stream_folder + '/features')
+        features_df.to_csv(stream_folder + '/state_features.csv')
+        # features_df = pd.read_csv('state_features.csv')
+        state_features_importance_df = pd.merge(states_q_values_df, features_df, on='state')
+        state_features_importance_df = state_features_importance_df[['state', 'q_values', 'importance', 'features']]
+        state_features_importance_df.to_csv(stream_folder + '/state_features_impoartance.csv')
+        #state_features_importance_df = pd.read_csv('state_features_impoartance.csv')
+
         state_features_importance_df['features'] = state_features_importance_df['features'].apply(lambda x:
                                                                                                   np.fromstring(
                                                                                                       x.replace('\n', '')
@@ -22,22 +36,29 @@ if __name__ == '__main__':
                                                                                                                    ' '),
                                                                                                       sep=' '))
 
-        summary_states, summary_states_with_context = highlights_div(state_features_importance_df, 15, 10, 10)
+        summary_states, summary_states_with_context = highlights_div(state_features_importance_df, trajectories,
+                                                                     pre_context, post_context)
+        with open(stream_folder + '/summary_states.txt', "w") as text_file:
+            text_file.write(str(summary_states))
+        np.save(stream_folder + '/summary_states_with_context.npy', summary_states_with_context)
 
-        random_states, random_states_with_context = random_state_selection(state_features_importance_df, 15, 10, 10)
+        random_states, random_states_with_context = random_state_selection(state_features_importance_df, trajectories,
+                                                                           pre_context, post_context)
 
         image_folder = os.path.join(stream_folder, 'test/argmax_smooth/')
-        video_name = 'highlights_div_15_10_10_lrp.mp4'
+        video_name = 'highlights_div_lrp_' + parameter_string + '.mp4'
         image_utils.generate_video(image_folder, video_folder, video_name,
                                    image_indices=summary_states_with_context)
-        image_utils.generate_video(image_folder, video_folder, 'random_15_10_10_lrp.mp4',
+        video_name = 'random_lrp_' + parameter_string + '.mp4'
+        image_utils.generate_video(image_folder, video_folder, video_name,
                                    image_indices=random_states_with_context)
 
         image_folder = os.path.join(stream_folder, 'screen/')
-        video_name = 'highlights_div_15_10_10.mp4'
+        video_name = 'highlights_div_' + parameter_string + '.mp4'
         image_utils.generate_video(image_folder, video_folder, video_name,
                                    image_indices=summary_states_with_context)
-        image_utils.generate_video(image_folder, video_folder, 'random_15_10_10.mp4',
+        video_name = 'random_' + parameter_string + '.mp4'
+        image_utils.generate_video(image_folder, video_folder, video_name,
                                    image_indices=random_states_with_context)
 
         #for testing different channels
