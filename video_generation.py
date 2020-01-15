@@ -9,7 +9,7 @@ import os
 if __name__ == '__main__':
 
     def help_function(stream_folder):
-        trajectories = 10
+        trajectories = 5
         context = 10
         minimum_gap = 10
         parameter_string = str(trajectories) + '_' + str(context) + '_' + str(minimum_gap)
@@ -45,7 +45,7 @@ if __name__ == '__main__':
         random_states, random_states_with_context = random_state_selection(state_features_importance_df, trajectories,
                                                                            context, minimum_gap)
 
-        image_folder = os.path.join(stream_folder, 'test/argmax_smooth/')
+        image_folder = os.path.join(stream_folder, 'argmax_smooth/')
         video_name = 'highlights_div_lrp_' + parameter_string + '.mp4'
         image_utils.generate_video(image_folder, video_folder, video_name,
                                    image_indices=summary_states_with_context)
@@ -72,8 +72,16 @@ if __name__ == '__main__':
         # image_utils.generate_video(image_folder, video_folder, video_name,
         #                            image_indices=summary_states_with_context)
 
-    help_function('stream_2M')
+    # help_function('stream_2M')
+    #
+    # help_function('stream_1M')
+    #
+    # help_function('stream_500k')
 
-    help_function('stream_1M')
+    help_function('stream')
 
-    help_function('stream_500k')
+    # help_function('stream_new_rew134')
+    #
+    # help_function('stream_new_rew60')
+    #
+    # help_function('stream_new_rew89')

@@ -105,7 +105,7 @@ def crop_image_button(image, part = 0.18 ):
 
 
 def generate_video(image_folder, out_path, name="video.mp4", image_indices=None, crop_images = True):
-    ''' creates a video from all images in a folder
+    ''' creates a video from images in a folder
     :param image_folder: folder containing the images
     :param out_path: output folder for the video
     :param name: name of the output video
@@ -117,6 +117,8 @@ def generate_video(image_folder, out_path, name="video.mp4", image_indices=None,
     fourcc = cv2.VideoWriter_fourcc(*'H264') #important for browser support, MP4V is not working with browsers
     fps = 30
     height, width, layers = 420,320,3
+    if not (os.path.isdir(out_path)):
+        os.makedirs(out_path)
     video = cv2.VideoWriter(out_path + name, fourcc, fps, (width,height))
     old_state_index = None
     black_frame = np.zeros((height, width, layers),np.uint8)
