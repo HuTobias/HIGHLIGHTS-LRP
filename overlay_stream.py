@@ -4,9 +4,10 @@ import cv2
 import numpy as np
 import stream_generator
 
-image_folder = "stream_500k/screen"
-raw_argmax_base = "stream_500k/raw_argmax/raw_argmax"
-save_folder = "stream_500k/test"
+stream_folder = 'stream'
+image_folder =stream_folder + "/screen"
+raw_argmax_base = stream_folder + "/raw_argmax/raw_argmax"
+save_folder = stream_folder + "/argmax_smooth"
 
 images = [img for img in os.listdir(image_folder)]
 images = image_utils.natural_sort(images)
@@ -44,7 +45,7 @@ if __name__ == "__main__":
                 saliency_map = interpolate(old_saliency_map,saliency_map, frame_index)
             saliency = image_utils.output_saliency_map(saliency_map[:, :, 3], i, edges=False)
             index = str(state_index)+ '_' + str(frame_index)
-            stream_generator.save_frame(saliency, save_folder+"/argmax_smooth/argmax", index)
+            stream_generator.save_frame(saliency, save_folder+"/argmax", index)
             # c0 = image_utils.saliency_in_channel(saliency_map[:,:,3], i, channel=0)
             # c1 = image_utils.saliency_in_channel(saliency_map[:,:,3], i, channel=1)
             # c2 = image_utils.saliency_in_channel(saliency_map[:,:,3], i, channel=2)

@@ -12,19 +12,23 @@ from argmax_analyzer import Argmax
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 
+
 def save_frame(array, save_file, frame):
     if not (os.path.isdir(save_file)):
         os.makedirs(save_file)
+        os.rmdir(save_file)
     plt.imsave(save_file + '_' + str(frame) + '.png', array)
 
 def save_array(array, save_file, frame):
     if not (os.path.isdir(save_file)):
         os.makedirs(save_file)
+        os.rmdir(save_file)
     np.save(save_file + '_' + str(frame) + '.npy', array)
 
 def save_q_values(array, save_file, frame):
     if not (os.path.isdir(save_file)):
         os.makedirs(save_file)
+        os.rmdir(save_file)
     save_file = save_file + '_' + str(frame) + '.txt'
     with open(save_file, "w") as text_file:
         text_file.write(str(array))
@@ -57,13 +61,19 @@ def get_feature_vector(model, input):
 
 if __name__ == '__main__':
     #use a different start to get states outside of the highlights stream
-    fixed_start = True
+    fixed_start = False
 
     np.random.seed(42)
 
     # model = keras.models.load_model('models/MsPacman_500K_reward26komma9_action_only.h5')
     # model = keras.models.load_model('models/MsPacman_1M_reward36komma3_action_only.h5')
-    model = keras.models.load_model('models/MsPacman_2M_2_reward47komma5_action_only.h5')
+    #model = keras.models.load_model('models/MsPacman_2M_2_reward47komma5_action_only.h5')
+    #model = keras.models.load_model('models/MsPacman_new_500k_reward60_action_only.h5')
+    #model = keras.models.load_model('models/MsPacman_5M_reward89komma5_bei2120k_action_only.h5')
+    #model = keras.models.load_model('models/MsPacman_10M_reward134komma4_bei8430k_action_only.h5')
+    # model = keras.models.load_model('models/MsPacman_1500k_reward77komma6_action_only.h5')
+    model = keras.models.load_model('models/MsPacman_7M_reward108_action_only.h5')
+
 
     steps = 10000
 
@@ -109,7 +119,7 @@ if __name__ == '__main__':
             # save raw saliency
             save_raw_data(argmax, save_file_argmax_raw, _)
             # scale saliency
-            argmax = image_utils.normalise_image(argmax)
+            # argmax = image_utils.normalise_image(argmax)
 
             # for future work
             # z_rule = analyzer_z.analyze(my_input)
@@ -124,9 +134,9 @@ if __name__ == '__main__':
                 index = str(_) + '_' + str(i)
                 observation = observations[i]
                 save_frame(observation, save_file_screen, index)
-                observation = image_utils.normalise_image(observation)
-                saliency = image_utils.output_saliency_map(argmax[:, :, 3], observation,edges=False) #in the last stream generation we used scale_factor 6 which scaled the images to much
-                save_frame(saliency, save_file_argmax, index)
+                # observation = image_utils.normalise_image(observation)
+                #saliency = image_utils.output_saliency_map(argmax[:, :, 3], observation,edges=False) #in the last stream generation we used scale_factor 6 which scaled the images to much
+                #save_frame(saliency, save_file_argmax, index)
 
                 # for future work
                 # saliency = image_utils.add_saliency_to_image(z_rule[:, :, 3], observation, 2)
