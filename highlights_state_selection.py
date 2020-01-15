@@ -8,7 +8,7 @@ from scipy.spatial import distance
 
 
 
-def random_state_selection(state_importance_df, budget, context_length, minimum_gap):
+def random_state_selection(state_importance_df, budget, context_length, minimum_gap, seed = None):
     ''' generate random summary
     :param state_importance_df: dataframe with 2 columns: state and importance score of the state
     :param budget: allowed length of summary - note this includes only the important states, it doesn't count context
@@ -18,9 +18,10 @@ def random_state_selection(state_importance_df, budget, context_length, minimum_
     :param minimum_gap: how many states should we skip after showing the context for an important state. For example, if
     we chose state 200, and the context length is 10, we will show states 189-211. If minimum_gap=10, we will not
     consider states 212-222 and states 178-198 because they are too close
+    :param seed: optional int to set a seed
     :return: a list with the indices of the randomly chosen states, and a list with all summary states (includes the context)
     '''
-    shuffled_states = state_importance_df.sample(frac=1.0)
+    shuffled_states = state_importance_df.sample(frac=1.0, random_state=seed)
     summary_states = []
     for index, row in shuffled_states.iterrows():
 

@@ -6,6 +6,8 @@ import os
 
 #utility script to generate all summarys at once
 
+seeds=[ 42, 1337, 1, 7, 13, 21, 153, 90,19234761, 291857957]
+
 if __name__ == '__main__':
 
     def help_function(stream_folder):
@@ -42,24 +44,32 @@ if __name__ == '__main__':
             text_file.write(str(summary_states))
         np.save(stream_folder + '/summary_states_with_context.npy', summary_states_with_context)
 
-        random_states, random_states_with_context = random_state_selection(state_features_importance_df, trajectories,
-                                                                           context, minimum_gap)
 
         image_folder = os.path.join(stream_folder, 'argmax_smooth/')
         video_name = 'highlights_div_lrp_' + parameter_string + '.mp4'
         image_utils.generate_video(image_folder, video_folder, video_name,
                                    image_indices=summary_states_with_context)
-        video_name = 'random_lrp_' + parameter_string + '.mp4'
-        image_utils.generate_video(image_folder, video_folder, video_name,
-                                   image_indices=random_states_with_context)
 
         image_folder = os.path.join(stream_folder, 'screen/')
         video_name = 'highlights_div_' + parameter_string + '.mp4'
         image_utils.generate_video(image_folder, video_folder, video_name,
                                    image_indices=summary_states_with_context)
-        video_name = 'random_' + parameter_string + '.mp4'
-        image_utils.generate_video(image_folder, video_folder, video_name,
-                                   image_indices=random_states_with_context)
+
+        for i in range(10):
+            seed =  seeds[i]
+            random_states, random_states_with_context = random_state_selection(state_features_importance_df,
+                                                                               trajectories,
+                                                                               context, minimum_gap,seed=seed)
+
+            image_folder = os.path.join(stream_folder, 'argmax_smooth/')
+            video_name = 'random_lrp_' + str(i) + '_' + parameter_string + '.mp4'
+            image_utils.generate_video(image_folder, video_folder, video_name,
+                                       image_indices=random_states_with_context)
+
+            image_folder = os.path.join(stream_folder, 'screen/')
+            video_name = 'random_' + str(i) + '_' + parameter_string + '.mp4'
+            image_utils.generate_video(image_folder, video_folder, video_name,
+                                       image_indices=random_states_with_context)
 
         #for testing different channels
         # image_folder = os.path.join(stream_folder, 'test/c0/')
