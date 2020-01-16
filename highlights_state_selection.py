@@ -136,6 +136,7 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
 
     sorted_df = state_importance_df.sort_values(['importance'], ascending=False)
     summary_states = []
+    summary_states_with_context = []
     num_chosen_states = 0
     for index, row in sorted_df.iterrows():
         state_index = row['state']
@@ -162,7 +163,7 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
 
 
         # compare to most similar state
-        most_similar_state, min_distance = find_similar_state_in_summary(state_importance_df, summary_states, row['features'],
+        most_similar_state, min_distance = find_similar_state_in_summary(state_importance_df, summary_states_with_context, row['features'],
                                                            distance_metric)
         if most_similar_state is None:
             insort_left(summary_states,state_index)
@@ -179,12 +180,14 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
             #     print(state_index)
             #     print('skipped')
 
+        #recalculate the context states
+        summary_states_with_context = []
+        for state in summary_states:
+            summary_states_with_context.extend((range(state - context_length, state + context_length)))
+
         if len(summary_states) == budget:
             break
 
-    summary_states_with_context = []
-    for state in summary_states:
-        summary_states_with_context.extend((range(state-context_length,state+context_length)))
     return summary_states, summary_states_with_context
 
 
