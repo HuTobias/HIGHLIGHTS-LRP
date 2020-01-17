@@ -111,7 +111,7 @@ def find_similar_state_in_summary(state_importance_df, summary_states, new_state
     return None
 
 
-def highlights_div(state_importance_df, budget, context_length, minimum_gap, distance_metric=distance.euclidean, percentile_threshold=15, subset_threshold = 1000):
+def highlights_div(state_importance_df, budget, context_length, minimum_gap, distance_metric=distance.euclidean, percentile_threshold=3, subset_threshold = 1000):
     ''' generate highlights-div  summary
     :param state_importance_df: dataframe with 2 columns: state and importance score of the state
     :param budget: allowed length of summary - note this includes only the important states, it doesn't count context
@@ -132,9 +132,11 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
     distances = []
     for i in range(len(state_features-1)):
         for j in range(i+1,len(state_features)):
-            distances.append(distance_metric(state_features[i],state_features[j]))
+            distance = distance_metric(state_features[i],state_features[j])
+            distances.append(distance)
     distances = np.array(distances)
     threshold = np.percentile(distances,percentile_threshold)
+    print('threshold:',threshold)
 
     sorted_df = state_importance_df.sort_values(['importance'], ascending=False)
     summary_states = []
@@ -224,7 +226,7 @@ def read_q_value_files(path):
 def read_feature_files(path):
     ''' reading state features from files. Assume each state is a seperate text file with a feature vector
     :param path: path to the directory where the text files are stored
-    :return: a pandas dataframe with two columns: state (index) and q_values (numpy array)
+    :return: a pandas dataframe with two columns: state (index) and features (numpy array)
     '''
     states = []
     feature_vector_list = []
@@ -245,10 +247,34 @@ def read_feature_files(path):
     state_features_df = pd.DataFrame({'state':states, 'features':feature_vector_list})
     return state_features_df
 
+def read_input_files(path):
+    '''reading state inputs from files. Assume each state is a seperate npy file with a array
+    :param path: path to the directory where the npy files are stored
+    :return: a pandas dataframe with two columns: state (index) and features (numpy array)
+    The inputs are called features so one can use the df interchangeably with the one from read_feature_files.
+    '''
+    states = []
+    input_list = []
+    for filename in os.listdir(path):
+        if filename.endswith('.npy'):  # only use npy files
+            file_split = filename.split('_')
+            state_index = int(file_split[len(file_split) - 1][:-4])
+            states.append(state_index)
+
+            input = np.load(os.path.join(path,filename))
+            input = input.flatten() #flatten arrays since we only need the distance between states
+            input_list.append(input)
+
+    state_input_df = pd.DataFrame({'state': states, 'features': input_list}) #we use features as name to make the div-code less bloated
+    return state_input_df
+
+
 
 if __name__ == '__main__':
     # image_folder = 'stream/argmax/'
     # video_folder = 'stream/'
+
+    test = read_input_files('stream/state')
 
 
     # test_data = pd.DataFrame({'state':[1,2,3],'q_values':[[1,2,3],[1,1,1],[2,1,1]]})

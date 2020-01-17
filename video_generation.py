@@ -1,7 +1,7 @@
 import pandas as pd
 import image_utils
 import numpy as np
-from highlights_state_selection import read_q_value_files, read_feature_files, compute_states_importance, highlights_div, random_state_selection
+from highlights_state_selection import read_q_value_files, read_feature_files, compute_states_importance, highlights_div, random_state_selection, read_input_files
 import os
 
 #utility script to generate all summarys at once
@@ -10,7 +10,7 @@ seeds=[ 42, 1337, 1, 7, 13, 21, 153, 90,19234761, 291857957]
 
 if __name__ == '__main__':
 
-    def help_function(stream_folder):
+    def help_function(stream_folder,features='input'):
         trajectories = 5
         context = 10
         minimum_gap = 10
@@ -21,22 +21,32 @@ if __name__ == '__main__':
         states_q_values_df = compute_states_importance(q_values_df, compare_to='second')
         states_q_values_df.to_csv(stream_folder + '/states_importance_second.csv')
         states_q_values_df = pd.read_csv(stream_folder + '/states_importance_second.csv')
-        features_df = read_feature_files(stream_folder + '/features')
-        features_df.to_csv(stream_folder + '/state_features.csv')
-        features_df = pd.read_csv(stream_folder + '/state_features.csv')
-        state_features_importance_df = pd.merge(states_q_values_df, features_df, on='state')
-        state_features_importance_df = state_features_importance_df[['state', 'q_values', 'importance', 'features']]
-        state_features_importance_df.to_csv(stream_folder + '/state_features_impoartance.csv')
-        state_features_importance_df = pd.read_csv(stream_folder + '/state_features_impoartance.csv')
+        if features == 'features':
+            features_df = read_feature_files(stream_folder + '/features')
+            features_df.to_csv(stream_folder + '/state_features.csv')
+            features_df = pd.read_csv(stream_folder + '/state_features.csv')
+            state_features_importance_df = pd.merge(states_q_values_df, features_df, on='state')
+            state_features_importance_df = state_features_importance_df[['state', 'q_values', 'importance', 'features']]
+            state_features_importance_df.to_csv(stream_folder + '/state_features_impoartance.csv')
+            state_features_importance_df = pd.read_csv(stream_folder + '/state_features_impoartance.csv')
 
-        state_features_importance_df['features'] = state_features_importance_df['features'].apply(lambda x:
-                                                                                                  np.fromstring(
-                                                                                                      x.replace('\n', '')
-                                                                                                          .replace('[', '')
-                                                                                                          .replace(']', '')
-                                                                                                          .replace('  ',
-                                                                                                                   ' '),
-                                                                                                      sep=' '))
+            state_features_importance_df['features'] = state_features_importance_df['features'].apply(lambda x:
+                                                                                                      np.fromstring(
+                                                                                                          x.replace('\n', '')
+                                                                                                              .replace('[', '')
+                                                                                                              .replace(']', '')
+                                                                                                              .replace('  ',
+                                                                                                                       ' '),
+                                                                                                          sep=' '))
+        elif features == 'input': #we need an extra case since the input arrays are too big to be saved in csv.
+            features_df = read_input_files(stream_folder + '/state')
+            state_features_importance_df = pd.merge(states_q_values_df, features_df, on='state')
+            state_features_importance_df = state_features_importance_df[['state', 'q_values', 'importance', 'features']]
+
+        else:
+            print('feature type not support.')
+
+
 
         summary_states, summary_states_with_context = highlights_div(state_features_importance_df, trajectories,
                                                                      context, minimum_gap)
@@ -88,7 +98,7 @@ if __name__ == '__main__':
     #
     # help_function('stream_500k')
 
-    help_function('stream')
+    help_function('stream_new_rew108')
 
     help_function('stream_new_rew134')
 
