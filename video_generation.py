@@ -56,18 +56,18 @@ if __name__ == '__main__':
                                    image_indices=summary_states_with_context)
 
         for i in range(10):
-            seed =  seeds[i]
+            seed = seeds[i]
             random_states, random_states_with_context = random_state_selection(state_features_importance_df,
                                                                                trajectories,
                                                                                context, minimum_gap,seed=seed)
 
             image_folder = os.path.join(stream_folder, 'argmax_smooth/')
-            video_name = 'random_lrp_' + str(i) + '_' + parameter_string + '.mp4'
+            video_name = 'random_lrp_' + str(i+1) + '_' + parameter_string + '.mp4'
             image_utils.generate_video(image_folder, video_folder, video_name,
                                        image_indices=random_states_with_context)
 
             image_folder = os.path.join(stream_folder, 'screen/')
-            video_name = 'random_' + str(i) + '_' + parameter_string + '.mp4'
+            video_name = 'random_' + str(i+1) + '_' + parameter_string + '.mp4'
             image_utils.generate_video(image_folder, video_folder, video_name,
                                        image_indices=random_states_with_context)
 
@@ -90,8 +90,10 @@ if __name__ == '__main__':
 
     help_function('stream')
 
-    # help_function('stream_new_rew134')
-    #
-    # help_function('stream_new_rew60')
-    #
-    # help_function('stream_new_rew89')
+    help_function('stream_new_rew134')
+
+    help_function('stream_new_rew60')
+
+    help_function('stream_new_rew89')
+
+    help_function('stream_new_rew77')

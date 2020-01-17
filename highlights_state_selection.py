@@ -21,7 +21,7 @@ def random_state_selection(state_importance_df, budget, context_length, minimum_
     :param seed: optional int to set a seed
     :return: a list with the indices of the randomly chosen states, and a list with all summary states (includes the context)
     '''
-    shuffled_states = state_importance_df.sample(frac=1.0, random_state=seed)
+    shuffled_states = state_importance_df.sample(frac=1.0, random_state=seed, replace=False)
     summary_states = []
     for index, row in shuffled_states.iterrows():
 
@@ -111,7 +111,7 @@ def find_similar_state_in_summary(state_importance_df, summary_states, new_state
     return None
 
 
-def highlights_div(state_importance_df, budget, context_length, minimum_gap, distance_metric=distance.euclidean, percentile_threshold=5):
+def highlights_div(state_importance_df, budget, context_length, minimum_gap, distance_metric=distance.euclidean, percentile_threshold=15, subset_threshold = 1000):
     ''' generate highlights-div  summary
     :param state_importance_df: dataframe with 2 columns: state and importance score of the state
     :param budget: allowed length of summary - note this includes only the important states, it doesn't count context
@@ -122,11 +122,13 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
     we chose state 200, and the context length is 10, we will show states 189-211. If minimum_gap=10, we will not
     consider states 212-222 and states 178-198 because they are too close
     :param distance_metric: metric to use for comparing states (function)
-    :param percentile_threshold: what minimal distance to allow between states in summary 
+    :param percentile_threshold: what minimal distance to allow between states in summary
+    :param subset_threshold: number of random states to be used as basis for the div-threshold
     :return: a list with the indices of the important states, and a list with all summary states (includes the context)
     '''
 
     state_features = state_importance_df['features'].values
+    state_features = np.random.choice(state_features, size=subset_threshold, replace=False)
     distances = []
     for i in range(len(state_features-1)):
         for j in range(i+1,len(state_features)):
