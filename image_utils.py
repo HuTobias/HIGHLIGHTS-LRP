@@ -122,7 +122,7 @@ def generate_video(image_folder, out_path, name="video.mp4", image_indices=None,
     video = cv2.VideoWriter(out_path + name, fourcc, fps, (width,height))
     old_state_index = None
     black_frame = np.zeros((height, width, layers),np.uint8)
-    black_frame_number = int(fps/2)
+    black_frame_number = int(fps)
 
     for image in images:
         to_write = False
