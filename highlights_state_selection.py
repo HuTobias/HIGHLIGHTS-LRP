@@ -127,6 +127,9 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
     :return: a list with the indices of the important states, and a list with all summary states (includes the context)
     '''
 
+    min_state = state_importance_df['state'].values.min()
+    max_state = state_importance_df['state'].values.max()
+
     state_features = state_importance_df['features'].values
     state_features = np.random.choice(state_features, size=subset_threshold, replace=False)
     distances = []
@@ -172,6 +175,7 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
         if most_similar_state is None:
             insort_left(summary_states,state_index)
             num_chosen_states += 1
+            print('summary_states:', summary_states )
 
         else:
             # similar_state_importance = state_importance_df.loc[state_importance_df['state'] == most_similar_state].iloc[0].importance
@@ -179,6 +183,7 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
             if min_distance > threshold:
                 insort_left(summary_states,state_index)
                 num_chosen_states += 1
+                print('summary_states:', summary_states)
                 # print('took')
             # else:
             #     print(state_index)
@@ -187,7 +192,9 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
         #recalculate the context states
         summary_states_with_context = []
         for state in summary_states:
-            summary_states_with_context.extend((range(state - context_length, state + context_length)))
+            left_index = max(state - context_length,min_state)
+            right_index = min(state + context_length,max_state) +1
+            summary_states_with_context.extend((range(left_index, right_index)))
 
         if len(summary_states) == budget:
             break
@@ -271,8 +278,6 @@ def read_input_files(path):
 
 
 if __name__ == '__main__':
-    # image_folder = 'stream/argmax/'
-    # video_folder = 'stream/'
 
     test = read_input_files('stream/state')
 
