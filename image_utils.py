@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import skimage
-from skimage import filters, io, transform, exposure
+from skimage import filters, transform
 import cv2
 import os
 import re
@@ -24,7 +24,7 @@ def add_saliency_to_image(saliency, image, saliency_brightness = 2):
     final_image = np.clip(final_image, 0, 1)
     return final_image
 
-def create_edge_image(image, output_shape = None):
+def create_edge_image(image):
     ''' creates a edge version of an image
     :param image: the original image
     :return: edge only version of the image
@@ -103,8 +103,33 @@ def crop_image_button(image, part = 0.18 ):
     crop = image[0:image_length - pixels,:, :]
     return crop
 
+def add_black_pixels(image,pixels = 80):
+    '''
+    adds black pixels to the bottom of an image
+    :param image: the image
+    :param pixels: the number of black pixels to be added
+    :return: image with black pixels
+    '''
+    image_length = image.shape[0]
+    new_image = np.zeros((image_length + pixels, image.shape[1], image.shape[2]), dtype=image.dtype)
+    new_image[0:image_length, :, :] = image
+    return new_image
 
-def generate_video(image_folder, out_path, name="video.mp4", image_indices=None, crop_images = True):
+
+def interpolate(array1, array2, t):
+    '''
+    linear interpolation between two frames of a state
+    :param array1: starting array
+    :param array2: end array
+    :param t: time parameter, goes from -1 to 3 ( 0=0.25, 3=1 in the normal interpolation formula)
+    :return: the interpolated array
+    '''
+    t = (t * 0.25) + 0.25
+    float_array = (array2 * t) + (array1 * (1 - t))
+    int_array = float_array.astype('uint8')
+    return int_array
+
+def generate_video(image_folder, out_path, name="video.mp4", image_indices=None, crop_images = True, black_pixels = 80):
     ''' creates a video from images in a folder
     :param image_folder: folder containing the images
     :param out_path: output folder for the video
@@ -119,9 +144,9 @@ def generate_video(image_folder, out_path, name="video.mp4", image_indices=None,
     height, width, layers = 420,320,3
     if not (os.path.isdir(out_path)):
         os.makedirs(out_path)
-    video = cv2.VideoWriter(out_path + name, fourcc, fps, (width,height))
+    video = cv2.VideoWriter(out_path + name, fourcc, fps, (width,height + black_pixels))
     old_state_index = None
-    black_frame = np.zeros((height, width, layers),np.uint8)
+    black_frame = np.zeros((height + black_pixels, width, layers),np.uint8)
     black_frame_number = int(fps)
 
     for image in images:
@@ -141,6 +166,8 @@ def generate_video(image_folder, out_path, name="video.mp4", image_indices=None,
                 if crop_images:
                     i = crop_image_button(i)
                 i = cv2.resize(i, (width,height))
+                if crop_images:
+                    i = add_black_pixels(i, pixels=black_pixels)
                 to_write = True
         except Exception as e:
             print(e)
@@ -160,10 +187,17 @@ def natural_sort( l ):
     l.sort( key=alphanum_key )
     return l
 
-
-#test = cv2.imread('stream_1M/test/c0/c0_4_0.png')
-#test = crop_image_button(test, 0.18)
-#show_image(test)
+def save_image(file_name,image):
+    """
+    saves image under file_name and creates the directory if it does not exist yet
+    :param file_name:
+    :param image:
+    :return: nothing
+    """
+    if not (os.path.isdir(file_name)):
+        os.makedirs(file_name)
+        os.rmdir(file_name)
+    plt.imsave(file_name, image)
 
 #pass
 

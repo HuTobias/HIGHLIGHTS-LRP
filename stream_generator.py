@@ -4,9 +4,8 @@ from custom_atari_wrapper import atari_wrapper
 import numpy as np
 import keras
 import innvestigate
-import os
-import image_utils
 from argmax_analyzer import Argmax
+import overlay_stream
 
 #Quickfix
 import os
@@ -65,15 +64,9 @@ if __name__ == '__main__':
 
     np.random.seed(42)
 
-    # model = keras.models.load_model('models/MsPacman_500K_reward26komma9_action_only.h5')
-    # model = keras.models.load_model('models/MsPacman_1M_reward36komma3_action_only.h5')
-    #model = keras.models.load_model('models/MsPacman_2M_2_reward47komma5_action_only.h5')
-    #model = keras.models.load_model('models/MsPacman_new_500k_reward60_action_only.h5')
-    #model = keras.models.load_model('models/MsPacman_5M_reward89komma5_bei2120k_action_only.h5')
-    #model = keras.models.load_model('models/MsPacman_10M_reward134komma4_bei8430k_action_only.h5')
-    # model = keras.models.load_model('models/MsPacman_1500k_reward77komma6_action_only.h5')
-    model = keras.models.load_model('models/MsPacman_7M_reward108_action_only.h5')
-
+    model = keras.models.load_model('models/MsPacman_5M_reward89komma5_bei2120k_action_only.h5')
+    #model = keras.models.load_model('models/MsPacman_5M_power_pill_6komma8_bei3M_action_only.h5')
+    #model = keras.models.load_model('models/MsPacman_5M_fear_ghost_rew-23_bei4komma7M_action_only.h5')
 
     steps = 10000
 
@@ -82,19 +75,27 @@ if __name__ == '__main__':
     analyzer_z = innvestigate.analyzer.LRPAlpha1Beta0IgnoreBias(model)
     analyzer_arg = Argmax(model)
 
+    total_reward = 0
+    reward_list = []
+
     env = gym.make('MsPacmanNoFrameskip-v4')
     env.reset()
     wrapper = atari_wrapper(env)
+    wrapper.reset(noop_max=1)
     if fixed_start :
-        wrapper.fixed_reset(300,3) #used  action 3 and 4
+        wrapper.fixed_reset(300,2) #used  action 3 and 4
 
-    save_file_argmax = os.path.join('stream', 'argmax', 'argmax')
-    save_file_argmax_raw = os.path.join('stream', 'raw_argmax', 'raw_argmax')
-    save_file_z = os.path.join('stream', 'z_rule', 'z_rule')
-    save_file_screen = os.path.join('stream', 'screen', 'screen')
-    save_file_state = os.path.join('stream', 'state', 'state')
-    save_file_q_values = os.path.join('stream', 'q_values', 'q_values')
-    save_file_features = os.path.join('stream', 'features', 'features')
+    directory = ''
+    directory = os.path.join(directory,'stream')
+    save_file_argmax = os.path.join(directory, 'argmax', 'argmax')
+    save_file_argmax_raw = os.path.join(directory, 'raw_argmax', 'raw_argmax')
+    save_file_z = os.path.join(directory, 'z_rule', 'z_rule')
+    save_file_screen = os.path.join(directory, 'screen', 'screen')
+    save_file_state = os.path.join(directory, 'state', 'state')
+    save_file_q_values = os.path.join(directory, 'q_values', 'q_values')
+    save_file_features = os.path.join(directory, 'features', 'features')
+    scores_file = os.path.join(directory, 'scores.txt')
+    average_score_file = os.path.join(directory, 'average_score.txt')
 
     for _ in range(steps):
         if _ < 4:
@@ -113,18 +114,17 @@ if __name__ == '__main__':
 
             action = np.argmax(np.squeeze(output))
 
+            ###action saving
+            # if action != old_action:
+            #     print('action', action, 'state', _)
+            # old_action = action
+
+
             #analyzing
             argmax = analyzer_arg.analyze(my_input)
             argmax = np.squeeze(argmax)
             # save raw saliency
             save_raw_data(argmax, save_file_argmax_raw, _)
-            # scale saliency
-            # argmax = image_utils.normalise_image(argmax)
-
-            # for future work
-            # z_rule = analyzer_z.analyze(my_input)
-            # z_rule = np.squeeze(z_rule)
-            # z_rule = image_utils.normalise_image(z_rule)
 
             #save the state
             save_raw_data(my_input,save_file_state, _)
@@ -134,19 +134,25 @@ if __name__ == '__main__':
                 index = str(_) + '_' + str(i)
                 observation = observations[i]
                 save_frame(observation, save_file_screen, index)
-                # observation = image_utils.normalise_image(observation)
-                #saliency = image_utils.output_saliency_map(argmax[:, :, 3], observation,edges=False) #in the last stream generation we used scale_factor 6 which scaled the images to much
-                #save_frame(saliency, save_file_argmax, index)
-
-                # for future work
-                # saliency = image_utils.add_saliency_to_image(z_rule[:, :, 3], observation, 2)
-                # save_frame(saliency, save_file_z, index)
-
 
 
         stacked_frames, observations, reward, done, info = wrapper.step(action)
+        total_reward += reward
+        if done:
+            print('total_reward',total_reward)
+            reward_list.append(total_reward)
+            total_reward = 0
         env.render()
 
-# image_utils.generate_video('stream/argmax/','stream/','argmax.mp4')
-# image_utils.generate_video('stream/screen/','stream/','screen.mp4')
-#image_utils.generate_video('stream/z_rule/','stream/','z_rule.mp4')
+    reward_list.append(total_reward)
+    average_reward = np.mean(reward_list)
+    with open(scores_file, "w") as text_file:
+        text_file.write(str(reward_list))
+    with open(average_score_file, "w") as text_file:
+        text_file.write(str(average_reward))
+
+    import datetime
+    print('Time:')
+    print(datetime.datetime.now())
+
+    overlay_stream.overlay_stream(directory)

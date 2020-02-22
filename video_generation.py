@@ -10,12 +10,12 @@ seeds=[ 42, 1337, 1, 7, 13, 21, 153, 90,19234761, 291857957]
 
 if __name__ == '__main__':
 
-    def help_function(stream_folder,features='input'):
+    def help_function(stream_folder,features='input', load_states=False):
         trajectories = 5
         context = 10
         minimum_gap = 10
         parameter_string = str(trajectories) + '_' + str(context) + '_' + str(minimum_gap)
-        video_folder = os.path.join(stream_folder,'smooth_vid/')
+        video_folder = os.path.join(stream_folder,'smooth_stream_vid_max/')
 
         q_values_df = read_q_value_files(stream_folder + '/q_values')
         states_q_values_df = compute_states_importance(q_values_df, compare_to='second')
@@ -42,25 +42,24 @@ if __name__ == '__main__':
             features_df = read_input_files(stream_folder + '/state')
             state_features_importance_df = pd.merge(states_q_values_df, features_df, on='state')
             state_features_importance_df = state_features_importance_df[['state', 'q_values', 'importance', 'features']]
-
         else:
             print('feature type not support.')
 
-
-
-        summary_states, summary_states_with_context = highlights_div(state_features_importance_df, trajectories,
+        if load_states:
+            summary_states_with_context = np.load(stream_folder + '/summary_states_with_context.npy')
+        else:
+            summary_states, summary_states_with_context = highlights_div(state_features_importance_df, trajectories,
                                                                      context, minimum_gap)
-        with open(stream_folder + '/summary_states.txt', "w") as text_file:
-            text_file.write(str(summary_states))
-        np.save(stream_folder + '/summary_states_with_context.npy', summary_states_with_context)
-
+            with open(stream_folder + '/summary_states.txt', "w") as text_file:
+                text_file.write(str(summary_states))
+            np.save(stream_folder + '/summary_states_with_context.npy', summary_states_with_context)
 
         image_folder = os.path.join(stream_folder, 'argmax_smooth/')
         video_name = 'highlights_div_lrp_' + parameter_string + '.mp4'
         image_utils.generate_video(image_folder, video_folder, video_name,
                                    image_indices=summary_states_with_context)
 
-        image_folder = os.path.join(stream_folder, 'screen/')
+        image_folder = os.path.join(stream_folder, 'screen_smooth/')
         video_name = 'highlights_div_' + parameter_string + '.mp4'
         image_utils.generate_video(image_folder, video_folder, video_name,
                                    image_indices=summary_states_with_context)
@@ -76,34 +75,10 @@ if __name__ == '__main__':
             image_utils.generate_video(image_folder, video_folder, video_name,
                                        image_indices=random_states_with_context)
 
-            image_folder = os.path.join(stream_folder, 'screen/')
+            image_folder = os.path.join(stream_folder, 'screen_smooth/')
             video_name = 'random_' + str(i+1) + '_' + parameter_string + '.mp4'
             image_utils.generate_video(image_folder, video_folder, video_name,
                                        image_indices=random_states_with_context)
 
-        #for testing different channels
-        # image_folder = os.path.join(stream_folder, 'test/c0/')
-        # video_name = 'highlights_div_15_10_10_lrp_c0.mp4'
-        # image_utils.generate_video(image_folder, video_folder, video_name,
-        #                            image_indices=summary_states_with_context)
-        #
-        # image_folder = os.path.join(stream_folder, 'test/c1/')
-        # video_name = 'highlights_div_15_10_10_lrp_c1.mp4'
-        # image_utils.generate_video(image_folder, video_folder, video_name,
-        #                            image_indices=summary_states_with_context)
-
-    # help_function('stream_2M')
-    #
-    # help_function('stream_1M')
-    #
-    # help_function('stream_500k')
-
-    help_function('stream_new_rew108')
-
-    help_function('stream_new_rew134')
-
-    help_function('stream_new_rew60')
-
-    help_function('stream_new_rew89')
-
-    help_function('stream_new_rew77')
+    stream_folder = 'stream'
+    help_function(stream_folder, load_states=False)

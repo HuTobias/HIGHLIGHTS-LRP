@@ -7,7 +7,7 @@ import os
 import numpy as np
 
 model_path = './models'
-model_name = "MsPacman_7M_reward108"
+model_name = "MsPacman_5M_power_pill"
 load_path = os.path.join(model_path,model_name)
 
 def load_Model_with_trained_variables(load_path):
@@ -74,10 +74,8 @@ if __name__ == '__main__':
     modelStatePart.summary()
     modelActionPart.summary()
 
-    model.save(load_path +'_dueling.h5')
-    modelStatePart.save(load_path + '_state_only.h5')
+    #model.save(load_path +'_dueling.h5')
+    #modelStatePart.save(load_path + '_state_only.h5')
     modelActionPart.save(load_path + '_action_only.h5')
-
-
 
 pass

@@ -53,8 +53,10 @@ class atari_wrapper():
         stacked_observations = []
         #TODO dirty numbers
         obs_buffer = np.zeros((2,210,160,3),dtype='uint8' )
+        total_reward = 0
         for i in range(skip_frames):
             observation, reward, done, info = self.env.step(action)
+            total_reward += reward
             if i == skip_frames - 2: obs_buffer[0] = observation
             if i == skip_frames - 1: obs_buffer[1] = observation
             if done:
@@ -62,13 +64,19 @@ class atari_wrapper():
             stacked_observations.append(observation)
 
         max_frame = obs_buffer.max(axis=0)
-        return max_frame, stacked_observations, reward, done, info
+        return max_frame, stacked_observations, total_reward, done, info
 
     def reset(self, noop_max = 30):
         """ Do no-op action for a number of steps in [1, noop_max], to achieve random game starts.
+        We also do no-op for 250 steps because Pacman cant do anything at the beginning of the game (number found empirically)
         """
         self.env.reset()
+        for _ in range(250):
+            obs, _, done, _ = self.env.step(self.noop_action)
+            if done:
+                obs = self.env.reset()
         noops = np.random.randint(1, noop_max + 1)
+        print("number noops:", noops)
         for _ in range(noops):
             obs, _, done, _ = self.env.step(self.noop_action)
             if done:
