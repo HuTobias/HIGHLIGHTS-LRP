@@ -135,7 +135,9 @@ analyze_demographic(data_randomLRP)
 data_highlightsLRP = data.loc[data.randnumber==4]
 print('##########Condition 4##########')
 analyze_demographic(data_highlightsLRP)
+
 #####Analysis of trust task #####
+data = pd.read_csv('fusion_trust_eval.csv')
 
 data['TrustClicksTotal'] = data.videoClicks1B + data.videoClicks1A + data.videoClicks2A + data.videoClicks2B + \
                            data.videoClicks3A + data.videoClicks3B
@@ -184,7 +186,7 @@ ax = sns.boxplot(x='condition', y='trustTimeAvg', data=data, order=['R','HL','R-
 show_and_save_plt(ax, 'trustTimeAvg', ylim=(0, 500))
 
 data['TrustClicksAvg'] = data['TrustClicksTotal'] / 3
-ax = sns.boxplot(x='condition', y='TrustClicksAvg', data=data, order=['R','HL','R-S','HL-S'])
+ax = sns.barplot(x='condition', y='TrustClicksAvg', data=data, order=['R','HL','R-S','HL-S'])
 show_and_save_plt(ax, 'TrustClicksAvg', y_label='average number of clicks', title= 'Pauses of the Video in the trust task', ylim=(0, 10))
 
 
@@ -244,7 +246,7 @@ show_and_save_plt(ax,'retroGoalTotal',ylim=(0,3))
 ax = sns.barplot(x='condition', y='retroPacmanTotal', data=data, order=['R','HL','R-S','HL-S'])
 show_and_save_plt(ax,'retroPacmanTotal',ylim=(0,3))
 
-ax = sns.boxplot(x='condition', y='retroClicksTotal', data=data, order=['R','HL','R-S','HL-S'])
+ax = sns.barplot(x='condition', y='retroClicksTotal', data=data, order=['R','HL','R-S','HL-S'])
 show_and_save_plt(ax,'retroClicksAvg',y_label='average number of clicks', title='Pauses of the Video in the analysis task', ylim=(0, 10))
 
 avg_conf = None
@@ -267,7 +269,7 @@ show_and_save_plt(ax, column_name, y_label='average confidence',
                   title='Average confidence in the analysis',ylim=(1,7))
 
 data['retroTimeAvg'] = (data['retro1Time']+data['retro2Time']+data['retro3Time'])/3.0
-ax = sns.boxplot(x='condition', y='retroTimeAvg', data=data, order=['R','HL','R-S','HL-S'])
+ax = sns.barplot(x='condition', y='retroTimeAvg', data=data, order=['R','HL','R-S','HL-S'])
 show_and_save_plt(ax, 'trustTimeAvg', ylim=(0, 500))
 
 satisfaction_analysis(1,data)
