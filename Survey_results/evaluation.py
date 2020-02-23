@@ -2,9 +2,6 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import scipy.stats as stats
-import sklearn
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import PolynomialFeatures
 import matplotlib.pyplot as plt
 import os
 
