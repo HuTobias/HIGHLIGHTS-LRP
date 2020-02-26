@@ -102,7 +102,7 @@ print('##########Condition 2##########')
 analyze_demographic(data_highlights)
 show_and_save_plt(ax, 'demogrpahic/AiExperience_highlights', y_label='percent of participants', ylim=[0,1])
 
-data_randomLRP = data.loc[data.randnumber==2]
+data_randomLRP = data.loc[data.randnumber==3]
 print('##########Condition 3##########')
 analyze_demographic(data_randomLRP)
 show_and_save_plt(ax, 'demogrpahic/AiExperience_randomLRP', y_label='percent of participants', ylim=[0,1])

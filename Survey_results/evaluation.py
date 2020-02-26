@@ -282,7 +282,6 @@ if __name__ == '__main__':
     mann_whitney(data, 'explSatisfaction' + 'Retro' + 'Avg')
 
     # analyze task specific satisfacttion
-
     data_No_LRP = data.loc[data.randnumber < 3]
     data_LRP = data.loc[data.randnumber > 2]
 
@@ -305,3 +304,38 @@ if __name__ == '__main__':
     column_name = base_column_name + '[3]'
     ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
     show_and_save_plt(ax, 'retroSatisfactionTooMuch', y_label='average satisfaction')
+
+    #### analye distribution of chosen objects:
+
+    def sum_retro_item(idx):
+        idx = '[' + str(idx) + ']'
+        sum = data['retrospection'+str(1)+ idx]
+        for agent in range(3,4):
+             sum += data['retrospection'+str(agent)+ idx]
+        return sum
+
+    data['pacman'] = sum_retro_item(1)
+    data['normal_pill'] = sum_retro_item(2)
+    data['power_pill'] = sum_retro_item(3)
+    data['ghost'] = sum_retro_item(4)
+    data['blue_ghost'] = sum_retro_item(5)
+    data['cherry'] = sum_retro_item(6)
+
+    data_random = data.loc[data.randnumber == 1]
+    ax = analyze_distribution(data_random,
+                              ['pacman', 'normal_pill', 'power_pill', 'ghost', 'blue_ghost', 'cherry'])
+    show_and_save_plt(ax, os.path.join('single_agents','retroDistributionR'))
+
+    data_highlights = data.loc[data.randnumber == 2]
+    ax = analyze_distribution(data_highlights,
+                              ['pacman', 'normal_pill', 'power_pill', 'ghost', 'blue_ghost', 'cherry'])
+    show_and_save_plt(ax, os.path.join('single_agents','retroDistributionH'))
+
+    data_randomLRP = data.loc[data.randnumber == 3]
+    ax = analyze_distribution(data_randomLRP,
+                              ['pacman', 'normal_pill', 'power_pill', 'ghost', 'blue_ghost', 'cherry'])
+    show_and_save_plt(ax, os.path.join('single_agents','retroDistributionRS'))
+
+    data_highlightsLRP = data.loc[data.randnumber == 4]
+    ax = analyze_distribution(data_highlightsLRP, ['pacman','normal_pill', 'power_pill','ghost','blue_ghost','cherry'])
+    show_and_save_plt(ax, os.path.join('single_agents','retroDistributionHS'))
