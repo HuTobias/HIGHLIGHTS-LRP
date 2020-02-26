@@ -84,7 +84,7 @@ def satisfaction_analysis(number, data):
                 temp += data[column_name + '[' + str(j) + ']'][i]
             temp = temp / 4
         else:
-            for j in (1, 2, 3, 5, 6):
+            for j in (1, 2, 3,5,6):
                 temp += data[column_name + '[' + str(j) + ']'][i]
             temp = temp / 5
         avg_satisfaction.append(temp)
@@ -171,6 +171,30 @@ if __name__ == '__main__':
     mann_whitney(data, 'explSatisfaction' + 'Trust' + 'Avg')
 
 
+    #analyze task specific satisfacttion
+
+    data_No_LRP = data.loc[data.randnumber < 3]
+    data_LRP = data.loc[data.randnumber > 2]
+
+    number = 2
+    base_column_name = 'explSatisfaction' + str(number)
+
+    column_name = base_column_name + '[4]'
+    ax = sns.barplot(x='condition', y=column_name, data=data_No_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    show_and_save_plt(ax, 'TrustSatisfactionVideo', y_label='average satisfaction')
+
+    column_name = base_column_name + '[5]'
+    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    show_and_save_plt(ax, 'TrustSatisfactionSummary', y_label='average satisfaction'
+                      )
+
+    column_name = base_column_name + '[6]'
+    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    show_and_save_plt(ax, 'TrustSatisfactionHeatmap', y_label='average satisfaction')
+
+    column_name = base_column_name + '[3]'
+    ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+    show_and_save_plt(ax, 'TrustSatisfactionTooMuch', y_label='average satisfaction')
 
 
 
@@ -256,3 +280,28 @@ if __name__ == '__main__':
 
     mann_whitney(data, 'retroScoreTotal')
     mann_whitney(data, 'explSatisfaction' + 'Retro' + 'Avg')
+
+    # analyze task specific satisfacttion
+
+    data_No_LRP = data.loc[data.randnumber < 3]
+    data_LRP = data.loc[data.randnumber > 2]
+
+    number = 1
+    base_column_name = 'explSatisfaction' + str(number)
+
+    column_name = base_column_name + '[4]'
+    ax = sns.barplot(x='condition', y=column_name, data=data_No_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    show_and_save_plt(ax, 'retroSatisfactionVideo', y_label='average satisfaction')
+
+    column_name = base_column_name + '[5]'
+    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    show_and_save_plt(ax, 'retroSatisfactionSummary', y_label='average satisfaction'
+                      )
+
+    column_name = base_column_name + '[6]'
+    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    show_and_save_plt(ax, 'retroSatisfactionHeatmap', y_label='average satisfaction')
+
+    column_name = base_column_name + '[3]'
+    ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+    show_and_save_plt(ax, 'retroSatisfactionTooMuch', y_label='average satisfaction')
