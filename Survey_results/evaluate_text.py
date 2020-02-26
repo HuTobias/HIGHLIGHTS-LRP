@@ -131,8 +131,9 @@ groups = {'eat_power_pill': ['eating PP','eating as many PP as possible','eat PP
           'HEATMAP' : ['HEATMAP'],
           'INTERPRETATION' : ['INTERPRETATION'],
           'GAMEPLAY' : ['GAMEPLAY'],
-          'UNJUSTIFIED' : ['UNJUSTIFIED','UNRELATED']
+          'UNJUSTIFIED' : ['UNJUSTIFIED','UNRELATED'],
           #'UNRELATED' : ['UNRELATED']
+          'UNDECIDED' : ['SAME SAME']
           }
 positive_agent1 = ['eat_power_pill','ignore_normal_pill','ignore_ghosts','ignore_blue_ghost','ignore_cherry','focus_on_Pacman', 'staying_in_corners' ]
 neutral_agent1 = ['eat_normal_pill','making_ghosts_blue']
@@ -157,7 +158,7 @@ def score(positive, neutral, data):
 
 
 
-interesting =['focus_on_Pacman', 'UNJUSTIFIED', 'score']
+interesting =['focus_on_Pacman', 'score', 'UNJUSTIFIED', 'GAMEPLAY', 'HEATMAP']
 
 if __name__ == '__main__':
 
@@ -179,7 +180,7 @@ if __name__ == '__main__':
     new_data_frame = get_grouped_df('PacmanStrategies_INT1_EXP1.CSV',data)
     new_data_frame['score'] = score(positive_agent1, neutral_agent1, new_data_frame)
 
-    new_data_frame.to_csv('int1.csv')
+    new_data_frame.to_csv('text_intention1.csv')
 
     merge1 = pd.merge(data,new_data_frame,on='seed')
 
@@ -190,7 +191,7 @@ if __name__ == '__main__':
     new_data_frame = get_grouped_df('PacmanStrategies_INT2_EXP2.CSV', data)
     new_data_frame['score'] = score(positive_agent2, neutral_agent2, new_data_frame)
 
-    new_data_frame.to_csv('int2.csv')
+    new_data_frame.to_csv('text_intention2.csv')
 
     merge2 = pd.merge(data, new_data_frame, on='seed')
 
@@ -201,7 +202,7 @@ if __name__ == '__main__':
     new_data_frame = get_grouped_df('PacmanStrategies_INT3_EXP3.CSV', data)
     new_data_frame['score'] = score(positive_agent3, neutral_agent3, new_data_frame)
 
-    new_data_frame.to_csv('int3.csv')
+    new_data_frame.to_csv('text_intention3.csv')
 
     merge3 = pd.merge(data, new_data_frame, on='seed')
 
@@ -210,13 +211,69 @@ if __name__ == '__main__':
         plt.show()
 
     ax = sns.barplot(x='condition', y='avoid_ghost', data=merge3, order=['R', 'H', 'R+S', 'H+S'])
-    plt.show()
+    show_and_save_plt(ax, os.path.join('text', 'avoid_ghost_agent3'), y_label= 'got avoid ghost')
 
     #summing
     for key in interesting:
         merge1[key] += merge2[key] + merge3[key]
+        merge1[key] = merge1[key]/3
         ax = sns.barplot(x='condition', y=key, data=merge1, order=['R', 'H', 'R+S', 'H+S'])
-        show_and_save_plt(ax, os.path.join('text', key + '_total'), y_label= key + ' total')
+        show_and_save_plt(ax, os.path.join('text', key + '_total'), y_label= 'average ' + key)
+
+
+
+    #### For Trust ####
+
+    #undecided exists here as additional category
+    interesting =['UNJUSTIFIED', 'GAMEPLAY', 'HEATMAP','UNDECIDED']
+
+    data = pd.read_csv('fusion_final.csv')
+
+    # skip users who did not watch retro:
+    data['TrustClicksTotal'] = data.videoClicks1B + data.videoClicks1A + data.videoClicks2A + data.videoClicks2B + \
+                               data.videoClicks3A + data.videoClicks3B
+
+    total_number = len(data['TrustClicksTotal'])
+    # check if they watched enough videos
+    data = data.loc[data.TrustClicksTotal > 5]
+    new_number = len(data['TrustClicksTotal'])
+    difference = total_number - new_number
+    print('did not watch:', difference)
+
+    data['condition'] = data.randnumber.apply(
+        lambda x: 'R' if x == 1 else 'H' if x == 2 else 'R+S' if x == 3 else 'H+S')
+
+
+    new_data_frame = get_grouped_df('PacmanStrategies_TRUST_1.CSV', data)
+    new_data_frame.to_csv('text_trust1.csv')
+    merge1 = pd.merge(data, new_data_frame, on='seed')
+    for key in interesting:
+        ax = sns.barplot(x='condition', y=key, data=merge1, order=['R', 'H', 'R+S', 'H+S'])
+        plt.show()
+
+    new_data_frame = get_grouped_df('PacmanStrategies_TRUST_2.CSV', data)
+    new_data_frame.to_csv('text_trust2.csv')
+    merge2 = pd.merge(data, new_data_frame, on='seed')
+    for key in interesting:
+        ax = sns.barplot(x='condition', y=key, data=merge2, order=['R', 'H', 'R+S', 'H+S'])
+        plt.show()
+
+    new_data_frame = get_grouped_df('PacmanStrategies_TRUST_3.CSV', data)
+    new_data_frame.to_csv('text_trust3.csv')
+    merge3 = pd.merge(data, new_data_frame, on='seed')
+    for key in interesting:
+        ax = sns.barplot(x='condition', y=key, data=merge3, order=['R', 'H', 'R+S', 'H+S'])
+        plt.show()
+
+    # summing
+    for key in interesting:
+        merge1[key] += merge2[key] + merge3[key]
+        merge1[key] = merge1[key] / 3
+        ax = sns.barplot(x='condition', y=key, data=merge1, order=['R', 'H', 'R+S', 'H+S'])
+        show_and_save_plt(ax, os.path.join('text', 'trust_' + key + '_total'), y_label='average ' + key, ylim=(0,1))
+
+
+
 
 
 
