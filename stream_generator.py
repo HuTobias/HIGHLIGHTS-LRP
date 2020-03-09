@@ -7,7 +7,7 @@ import innvestigate
 from argmax_analyzer import Argmax
 import overlay_stream
 
-#Quickfix
+#Quickfix for argmax
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 
@@ -64,15 +64,14 @@ if __name__ == '__main__':
 
     np.random.seed(42)
 
-    model = keras.models.load_model('models/MsPacman_5M_reward89komma5_bei2120k_action_only.h5')
-    #model = keras.models.load_model('models/MsPacman_5M_power_pill_6komma8_bei3M_action_only.h5')
-    #model = keras.models.load_model('models/MsPacman_5M_fear_ghost_rew-23_bei4komma7M_action_only.h5')
+    model = keras.models.load_model('models/MsPacman_5M_ingame_reward.h5')
+    #model = keras.models.load_model('models/MsPacman_5M_power_pill.h5')
+    #model = keras.models.load_model('models/MsPacman_5M_fear_ghost.h5')
 
     steps = 10000
 
     model.summary()
 
-    analyzer_z = innvestigate.analyzer.LRPAlpha1Beta0IgnoreBias(model)
     analyzer_arg = Argmax(model)
 
     total_reward = 0

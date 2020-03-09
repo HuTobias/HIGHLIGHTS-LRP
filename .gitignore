@@ -3,3 +3,10 @@
 /venv
 /stream
 
+/sanity_checks/model1
+/sanity_checks/model2
+/sanity_checks/model3
+/sanity_checks/model4
+/sanity_checks/model5
+/sanity_checks/state
+/sanity_checks/raw_argmax
