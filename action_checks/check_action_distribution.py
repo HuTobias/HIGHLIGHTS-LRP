@@ -1,3 +1,8 @@
+'''
+This module generates streams of gameplay and calculates the distribution of the actions that the agent chose during
+this stream.
+'''
+
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -5,11 +10,6 @@ import pandas as pd
 import keras
 from custom_atari_wrapper import atari_wrapper
 import gym
-
-'''
-This module generates streams of gameplay
-and calculates the distribution of the actions that the agent chose during this stream.
-'''
 
 if __name__ == '__main__':
     create_stream = False
