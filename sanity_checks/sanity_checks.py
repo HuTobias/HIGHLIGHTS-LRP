@@ -1,3 +1,11 @@
+'''
+This module implements sanity checks for saliency maps.
+To this end the layers in the model are cascadingly randomized and for each step we create a copy of the model.
+Then we create gameplay and saliency map streams for each of those models, using the decisions of the original model,
+ such that all models get the same input states.
+Finally we compare the generated saliency of all models.
+'''
+
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -37,12 +45,17 @@ def init_layer(layer):
     session.run(weights_initializer)
 
 def copy_model(model):
+    '''
+    Copies a keras model including the weights
+    :param model: the model to be copied
+    :return: the new copy of the model
+    '''
     model_m1 = keras.models.clone_model(model)
     model_m1.set_weights(model.get_weights())
     return model_m1
 
 def check_models(model1, model):
-    ''' checks if two models have the same weights, to make sure that a layer was randomized. '''
+    ''' checks if two models have the same weights, to make sure that a layer was randomized.'''
     for i in range(1,7):
         if i != 4:
             print('layer ', i)
@@ -161,7 +174,6 @@ if __name__ == '__main__':
         for _ in range(steps):
             if _ < 4:
                 action = env.action_space.sample()
-                # to have more controll over the fixed starts
             else:
                 my_input = np.expand_dims(stacked_frames, axis=0)
                 output = model.predict(my_input)  #this output corresponds with the output in baseline if --dueling=False is correctly set for baselines.
@@ -269,10 +281,15 @@ if __name__ == '__main__':
     #Create plots
     data_frame['rand_layer'] = data_frame.rand_layer.apply(
         lambda x: 'fc_2' if x == 1 else 'fc_1' if x == 2 else 'conv_3' if x == 3 else 'conv_2' if x == 4 else 'conv_1')
+
+    sns.set(palette='colorblind', style="whitegrid")
+
     ax = sns.barplot(x='rand_layer', y='pearson', data=data_frame)
-    show_and_save_plt(ax, 'pearson')
+    show_and_save_plt(ax, 'pearson',label_size=28, tick_size=20, y_label='Pearson')
     ax = sns.barplot(x='rand_layer', y='ssim', data=data_frame)
-    show_and_save_plt(ax, 'ssim')
+    plt.xlabel(None)
+    show_and_save_plt(ax, 'ssim',label_size=28, tick_size=20, y_label='Ssim')
     ax = sns.barplot(x='rand_layer', y='spearman', data=data_frame)
-    show_and_save_plt(ax, 'spearman')
+    plt.xlabel(None)
+    show_and_save_plt(ax, 'spearman',label_size=28, tick_size=20, y_label='Spearman')
 
