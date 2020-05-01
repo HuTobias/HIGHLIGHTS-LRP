@@ -1,3 +1,7 @@
+"""
+    Converting the tensorflow DQN model provided by baselines to a keras model.
+"""
+
 import tensorflow as tf
 from keras.layers import Input, Dense, Conv2D, Flatten
 from keras.models import Model
@@ -41,14 +45,14 @@ def load_Model_with_trained_variables(load_path):
     x1 = Conv2D(64, (4, 4), strides=(2, 2), activation='relu', padding='SAME', name='deepq/q_func/convnet/Conv_1')(x)
     x2 = Conv2D(64, (3, 3), strides=(1, 1), activation='relu', padding='SAME', name='deepq/q_func/convnet/Conv_2')(x1)
     conv_out = Flatten()(x2)
-    # Action stream
+    # Action values
     action_out = conv_out
-    action_out = Dense(hidden, activation='relu', name='deepq/q_func/action_value/fully_connected')(action_out)  # hidden=512 (paper), 256 (train_pong)
-    action_scores = Dense(num_actions, name='deepq/q_func/action_value/fully_connected_1', activation='linear')(action_out)  # num_actions = Anzahl valide Aktion zw. {4, .., 18}
-    # State stream
+    action_out = Dense(hidden, activation='relu', name='deepq/q_func/action_value/fully_connected')(action_out)
+    action_scores = Dense(num_actions, name='deepq/q_func/action_value/fully_connected_1', activation='linear')(action_out)  # num_actions in {4, .., 18}
+    # State values
     if dueling:
         state_out = conv_out
-        state_out = Dense(hidden, activation='relu', name='deepq/q_func/state_value/fully_connected')(state_out)  # hidden=512 (paper), 256 (train_pong)
+        state_out = Dense(hidden, activation='relu', name='deepq/q_func/state_value/fully_connected')(state_out)
         state_score = Dense(1, name='deepq/q_func/state_value/fully_connected_1')(state_out)
     # Finish model
     model = Model(inputs, [action_scores, state_score])
@@ -57,7 +61,6 @@ def load_Model_with_trained_variables(load_path):
 
     # Load weights
     for layer in model.layers:
-        # if not same sizes: Layer weight shape (3136, 256) not compatible with provided weight shape (7744, 256)
         if layer.name + "/weights:0" in dictOfWeights:
             newWeights = dictOfWeights[layer.name + "/weights:0"]
             newBiases = dictOfBiases[layer.name + "/biases:0"]

@@ -1,3 +1,14 @@
+'''
+    Generates a stream of gameplay for a given agent.
+
+    A folder 'stream' is created whose subfolders contain all the states, visually displayed frames, Q-values,
+    saliency maps and features (output of the second to last layer).
+
+    At the very end *overlay_stream* is used to overlay each frame with a saliency map.
+    This can also be redone later using *overlay_stream* to save time while trying different overlay styles.
+'''
+
+
 import gym
 import matplotlib.pyplot as plt
 from custom_atari_wrapper import atari_wrapper
@@ -88,7 +99,6 @@ if __name__ == '__main__':
     directory = os.path.join(directory,'stream')
     save_file_argmax = os.path.join(directory, 'argmax', 'argmax')
     save_file_argmax_raw = os.path.join(directory, 'raw_argmax', 'raw_argmax')
-    save_file_z = os.path.join(directory, 'z_rule', 'z_rule')
     save_file_screen = os.path.join(directory, 'screen', 'screen')
     save_file_state = os.path.join(directory, 'state', 'state')
     save_file_q_values = os.path.join(directory, 'q_values', 'q_values')
@@ -112,12 +122,6 @@ if __name__ == '__main__':
             save_array(features, save_file_features,_)
 
             action = np.argmax(np.squeeze(output))
-
-            ###action saving
-            # if action != old_action:
-            #     print('action', action, 'state', _)
-            # old_action = action
-
 
             #analyzing
             argmax = analyzer_arg.analyze(my_input)
@@ -154,4 +158,5 @@ if __name__ == '__main__':
     print('Time:')
     print(datetime.datetime.now())
 
+    #overlays the stream of frames with the saliency maps.
     overlay_stream.overlay_stream(directory)

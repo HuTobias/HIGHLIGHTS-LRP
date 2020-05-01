@@ -1,11 +1,15 @@
+"""
+    Utility script to generate all summarys for a given stream at once (1 HIGHLIGHTS-DIV summary and 10 random summaries).
+"""
+
+
 import pandas as pd
 import image_utils
 import numpy as np
 from highlights_state_selection import read_q_value_files, read_feature_files, compute_states_importance, highlights_div, random_state_selection, read_input_files
 import os
 
-#utility script to generate all summarys at once
-
+#random seeds for the random summaries
 seeds=[ 42, 1337, 1, 7, 13, 21, 153, 90,19234761, 291857957]
 
 if __name__ == '__main__':

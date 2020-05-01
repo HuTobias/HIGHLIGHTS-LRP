@@ -1,3 +1,10 @@
+'''
+   Implementation of the different strategy summarization Algorithms we used.
+   *random_state_selection() chooses random summaries.
+   *highlights implements the HIGHLIGHTS algorithm.
+   *highlights_div implements the HIGHLIGHTS-DIV algorithm.
+'''
+
 import numpy as np
 import pandas as pd
 import os
