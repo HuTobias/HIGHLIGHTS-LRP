@@ -122,7 +122,7 @@ if __name__ == '__main__':
         # generate stream of states, actions, and saliency maps
         np.random.seed(42)
 
-        model = keras.models.load_model('../models/MsPacman_5M_ingame_reward_action_only.h5')
+        model = keras.models.load_model('../models/MsPacman_5M_ingame_reward.h5')
         #model = keras.models.load_model('models/MsPacman_5M_power_pill.h5')
         #model = keras.models.load_model('models/MsPacman_5M_fear_ghost.h5')
 

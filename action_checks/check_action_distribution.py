@@ -21,9 +21,9 @@ if __name__ == '__main__':
     if create_stream:
         np.random.seed(42)
 
-        #model = keras.models.load_model('models/MsPacman_5M_ingame_reward_action_only.h5')
-        #model = keras.models.load_model('models/MsPacman_5M_power_pill_action_only.h5')
-        model = keras.models.load_model('models/MsPacman_5M_fear_ghost_action_only.h5')
+        #model = keras.models.load_model('models/MsPacman_5M_ingame_reward.h5')
+        #model = keras.models.load_model('models/MsPacman_5M_power_pill.h5')
+        model = keras.models.load_model('models/MsPacman_5M_fear_ghost.h5')
 
         steps = 10000
 

@@ -79,6 +79,6 @@ if __name__ == '__main__':
 
     #model.save(load_path +'_dueling.h5')
     #modelStatePart.save(load_path + '_state_only.h5')
-    modelActionPart.save(load_path + '_action_only.h5')
+    modelActionPart.save(load_path + '.h5')
 
 pass
