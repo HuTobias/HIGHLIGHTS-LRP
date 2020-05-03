@@ -2,7 +2,6 @@
 contains the atari_wrapper class, which is a simple implementation of openai's atari_wrappers for our purposes
 '''
 
-import gym
 import cv2
 import numpy as np
 

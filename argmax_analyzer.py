@@ -1,8 +1,5 @@
-from innvestigate import analyzer
-
 import keras
 import keras.backend as K
-import tensorflow as tf
 from innvestigate.analyzer.relevance_based.relevance_rule import Alpha1Beta0IgnoreBiasRule
 from innvestigate.analyzer.relevance_based.relevance_analyzer import _LRPFixedParams
 import innvestigate

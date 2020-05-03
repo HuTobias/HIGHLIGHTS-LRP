@@ -10,3 +10,4 @@
 /sanity_checks/model5
 /sanity_checks/state
 /sanity_checks/raw_argmax
+__pycache__

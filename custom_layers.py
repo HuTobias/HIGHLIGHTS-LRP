@@ -2,6 +2,7 @@ import keras
 import keras.backend as K
 import tensorflow as tf
 
+
 class ArgmaxPositions(keras.layers.Layer):
     ''' implementation of the LRP Argmax-Rule (https://link.springer.com/chapter/10.1007/978-3-030-30179-8_16)
         for convolutional layers

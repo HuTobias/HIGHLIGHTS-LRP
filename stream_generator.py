@@ -1,4 +1,4 @@
-'''
+"""
     Generates a stream of gameplay for a given agent.
 
     A folder 'stream' is created whose subfolders contain all the states, visually displayed frames, Q-values,
@@ -6,7 +6,7 @@
 
     At the very end *overlay_stream* is used to overlay each frame with a saliency map.
     This can also be redone later using *overlay_stream* to save time while trying different overlay styles.
-'''
+"""
 
 
 import gym
@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 from custom_atari_wrapper import atari_wrapper
 import numpy as np
 import keras
-import innvestigate
 from argmax_analyzer import Argmax
 import overlay_stream
 

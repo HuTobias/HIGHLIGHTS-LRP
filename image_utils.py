@@ -1,9 +1,9 @@
-'''
+"""
     Contains various image utility functions.
     Most importantly:
      *add_saliency_to_image to overlay frames with saliency maps
      *and generate_video to create videos from given frames.
-'''
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt

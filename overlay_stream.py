@@ -1,7 +1,7 @@
-'''
+"""
     Implements the function overlay_stream(stream_directory), which overlays all frames in the given directory with the
     saliency maps stored in the given directory.
-'''
+"""
 
 import os
 import image_utils
