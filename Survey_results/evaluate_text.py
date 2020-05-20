@@ -360,6 +360,9 @@ if __name__ == '__main__':
     mean_analysis(merge1, 'UNJUSTIFIED')
     mean_analysis(merge1, 'GAMEPLAY')
 
+    mean_analysis(merge1, 'goal')
+    mean_analysis(merge1, 'focus_on_Pacman')
+
 
     #### TRUST TASK ####
 
