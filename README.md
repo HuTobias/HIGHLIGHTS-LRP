@@ -1,6 +1,6 @@
 # Local and Global Explanations of Agent Behavior:Integrating Strategy Summaries with Saliency Map
 
-This repository contains the implementation for the paper "Local and Global Explanations of Agent Behavior:Integrating Strategy Summaries with Saliency Map".
+This repository contains the implementation for the paper "Local and Global Explanations of Agent Behavior:Integrating Strategy Summaries with Saliency Map"(https://arxiv.org/abs/2005.08874).
 This paper combines global explanations in the form of HIGHLIGHTS-DIV policy summaries (https://dl.acm.org/doi/10.5555/3237383.3237869) with LRP-argmax salieny maps (https://www.springerprofessional.de/enhancing-explainability-of-deep-reinforcement-learning-through-/17150184) 
 by generating summaries of Atari agent behavior that is overlayd with saliency maps that show what information the agent used.
 
