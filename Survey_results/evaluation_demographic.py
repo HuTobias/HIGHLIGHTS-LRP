@@ -19,7 +19,7 @@ def analyze_demographic(data):
 sns.set(palette= 'colorblind')
 
 data = pd.read_csv('fusion_final.csv')
-data['condition'] = data.randnumber.apply(lambda x: 'R' if x==1 else 'H' if x==2 else 'R+S' if x==3 else 'H+S')
+data['condition'] = data.randnumber.apply(lambda x: 'L' if x==1 else 'H' if x==2 else 'L+S' if x==3 else 'H+S')
 data.head()
 
 # AGE 1: <17, 2: 18-24, 3:25-34, 4:35-44, 5:45-54, 6:55-64, 7 >65, 8 not specify
@@ -35,13 +35,13 @@ data['age'] = data.age.apply(lambda x: '<17' if x==1 else '18-24' if x==2 else '
 ax = sns.catplot(x="condition", hue="age", kind="count",
                  data=data,
                  hue_order=['<17', '18-24', '25-34', '35-44', '45-54', '55-64','>65', 'None'],
-                order=['R', 'H', 'R+S', 'H+S'], legend=True, palette='colorblind'
+                order=['L', 'H', 'L+S', 'H+S'], legend=True, palette='colorblind'
                  );
 show_and_save_plt(ax, 'demogrpahic/ages', y_label='Number of Participants')
 ax = sns.catplot(x="condition", hue="age", kind="count",
                  data=data, aspect= 2,
                  hue_order=['<17', '18-24', '25-34', '35-44', '45-54', '55-64','>65', 'None'],
-                order=['R', 'H', 'R+S', 'H+S'], legend=False
+                order=['L', 'H', 'L+S', 'H+S'], legend=False
                  );
 show_and_save_plt(ax, 'demogrpahic/ages', y_label='Number of Participants')
 
@@ -55,7 +55,7 @@ print('number females:', genders.sum())
 data_gender = data.loc[data.gender < 3]
 # set males to 0 and females to 1
 data_gender.gender = data_gender.gender.values - 1
-ax = sns.barplot(x='condition', y='gender', data=data_gender, order=['R', 'H', 'R+S', 'H+S'])
+ax = sns.barplot(x='condition', y='gender', data=data_gender, order=['L', 'H', 'L+S', 'H+S'])
 show_and_save_plt(ax, 'demogrpahic/number_females', y_label='Percentage of Female Participants')
 
 # PACMAN EXP 1: never played, 2: <1year, 3: <5years, 4: >5years ago
@@ -65,7 +65,7 @@ print('pacman exp mean:', np.mean(pacman_experience))
 data['experiencePacman'] = data.experiencePacman.apply(lambda x: 'never' if x == 1 else '< 1 year' if x == 2 else
                                                        '< 5 years' if x == 3 else '> 5 years')
 ax = sns.catplot(x="condition", hue="experiencePacman", kind="count", hue_order=['never', '> 5 years', '< 1 year', '< 5 years'],
-                 data=data, order=['R', 'H', 'R+S', 'H+S'], legend=False,  aspect= 2);
+                 data=data, order=['L', 'H', 'L+S', 'H+S'], legend=False,  aspect= 2);
 show_and_save_plt(ax, 'demogrpahic/pacman_experience', y_label='Number of Participants')
 
 # AI VALUES
@@ -74,7 +74,7 @@ attitude = attitude[np.where(attitude != 6)]
 print('mean attitude towards AI', np.mean(attitude))
 
 data_attiude = data.loc[data['outcomeAI[1]'] != 6]
-ax = sns.barplot(x='condition', y='outcomeAI[1]', data=data_attiude, order=['R', 'H', 'R+S', 'H+S'])
+ax = sns.barplot(x='condition', y='outcomeAI[1]', data=data_attiude, order=['L', 'H', 'L+S', 'H+S'])
 show_and_save_plt(ax, 'demogrpahic/Attitude_towards_AI', y_label='Attitude towards AI')
 
 AI_exp = data.experienceAI.values

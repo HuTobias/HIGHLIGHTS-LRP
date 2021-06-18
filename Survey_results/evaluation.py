@@ -186,7 +186,7 @@ def satisfaction_analysis(number, data):
         avg_satisfaction.append(temp)
 
     data[result_name] = avg_satisfaction
-    ax = sns.barplot(x='condition', y=result_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y=result_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, result_name, y_label='Average Rating', title=title, ylim=(1, 5))
 
 
@@ -218,12 +218,20 @@ def analyze_distribution(data, columns):
 if __name__ == '__main__':
     sns.set(palette='colorblind')
 
+    only_experts = False
+
     ##### ANALYSIS OF TRUST TASK #####
 
     data = pd.read_csv('fusion_final.csv')
     data['condition'] = data.randnumber.apply(
-        lambda x: 'R' if x == 1 else 'H' if x == 2 else 'R+S' if x == 3 else 'H+S')
+        lambda x: 'L' if x == 1 else 'H' if x == 2 else 'L+S' if x == 3 else 'H+S')
     data.head()
+
+    if only_experts:
+        data = data[(data['experienceAI2[5]'].isin([1])) | (data['experienceAI2[4]'].isin([1]))].copy()
+        if not (os.path.isdir("AI_experts")):
+            os.makedirs("AI_experts")
+        os.chdir("AI_experts")
 
     # remove participants that did not watch enough videos
     data['TrustClicksTotal'] = data.videoClicks1B + data.videoClicks1A + data.videoClicks2A + data.videoClicks2B + \
@@ -246,14 +254,14 @@ if __name__ == '__main__':
     for i in range(1,4):
         column_name = 'trust'+ str(i) +'correct'
         title = 'comparison task for agent ' + str(i)
-        ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
         show_and_save_plt(ax, os.path.join('single_agents',column_name), 'percentage of correct selections', title=title)
 
         #for appropriate trust
         all_correct_values.extend(data[column_name])
 
         column_name = 'trustConfidence' + str(i) + '[confidence1]'
-        ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
         show_and_save_plt(ax, os.path.join('single_agents',column_name), ylim=(1, 7))
 
         #for appropriate trust
@@ -263,7 +271,7 @@ if __name__ == '__main__':
         column_name = 'videoClicks' + str(i)
         data[column_name] = data[column_name+'A'] + data[column_name+'B']
         title = 'pauses during the comparison task for agent ' + str(i)
-        ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
         show_and_save_plt(ax, os.path.join('single_agents', column_name), 'number of pauses', title=title, ylim=(0, 10))
 
     # for appropriate trust
@@ -272,12 +280,12 @@ if __name__ == '__main__':
     appropriate_confidence['correct'] = all_correct_values
     appropriate_confidence['condition'] = all_conditions
     ax = sns.catplot(x="condition", y='confidence', hue="correct", kind="bar",
-                     data=appropriate_confidence, order=['R', 'H', 'R+S', 'H+S'], legend=True, aspect=2);
+                     data=appropriate_confidence, order=['L', 'H', 'L+S', 'H+S'], legend=True, aspect=2);
     show_and_save_plt(ax, 'TrustAppropriateConfidence', y_label='Average Confidence',
                       ylim=(0, 7))
 
     # generate plots for all three agents combined
-    ax = sns.barplot(x='condition', y='numTrustCorrect', data=data, order=['R','H','R+S','H+S'])
+    ax = sns.barplot(x='condition', y='numTrustCorrect', data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax,'TrustPercentCorrect', y_label='Correct Agent Selections', title='combined trust tasks',
                       ylim=(0,3))
 
@@ -285,21 +293,21 @@ if __name__ == '__main__':
 
     column_name = 'TrustConfAvg'
     data[column_name] = (data['trustConfidence2[confidence1]']+data['trustConfidence3[confidence1]']+data['trustConfidence1[confidence1]'])/3.0
-    ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, column_name, y_label='Average Confidence',
                       title='Average confidence in the agent selection',ylim=(1,7))
 
     data['trustTimeAvg'] = (data['trust1Time']+data['trust2Time']+data['trust3Time'])/3.0
-    ax = sns.boxplot(x='condition', y='trustTimeAvg', data=data, order=['R','H','R+S','H+S'])
+    ax = sns.boxplot(x='condition', y='trustTimeAvg', data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, 'trustTimeAvg',y_label='Seconds', ylim=(0, 500))
 
     data['TrustClicksAvg'] = data['TrustClicksTotal'] / 3
-    ax = sns.boxplot(x='condition', y='TrustClicksAvg', data=data, order=['R','H','R+S','H+S'])
+    ax = sns.boxplot(x='condition', y='TrustClicksAvg', data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, 'TrustClicksAvg', y_label='Number of Pauses', title= 'Pauses of the Video in the trust task', ylim=(0, 10))
 
-    # Mann whitney analyis
-    mann_whitney(data, 'numTrustCorrect')
-    mann_whitney(data, 'explSatisfaction' + 'Trust' + 'Avg')
+    # Mann whitney analyis (and mean for only experts)
+    mann_whitney(data, 'numTrustCorrect', mean_only= only_experts)
+    mann_whitney(data, 'explSatisfaction' + 'Trust' + 'Avg', mean_only= only_experts)
 
     # analyze task specific satisfacttion
     data_No_LRP = data.loc[data.randnumber < 3]
@@ -309,20 +317,20 @@ if __name__ == '__main__':
     base_column_name = 'explSatisfaction' + str(number)
 
     column_name = base_column_name + '[4]'
-    ax = sns.barplot(x='condition', y=column_name, data=data_No_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y=column_name, data=data_No_LRP, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, 'TrustSatisfactionVideo', y_label='Average Satisfaction', ylim=(1,5))
 
     column_name = base_column_name + '[5]'
-    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, 'TrustSatisfactionSummary', y_label='Average Satisfaction', ylim=(1,5)
                       )
 
     column_name = base_column_name + '[6]'
-    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, 'TrustSatisfactionHeatmap', y_label='Average Satisfaction', ylim=(1,5))
 
     column_name = base_column_name + '[3]'
-    ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, 'TrustSatisfactionTooMuch', y_label='Average Satisfaction', ylim=(1,5))
 
     # generate a dataframe of the main values, since it is easier to look at or use for future research
@@ -340,10 +348,17 @@ if __name__ == '__main__':
 
     ############ ANALYSIS OF THE RETROSPECTION TASK ########
     # load data
+    if only_experts:
+        os.chdir("../")
+
     data = pd.read_csv('fusion_final.csv')
     data['condition'] = data.randnumber.apply(
-        lambda x: 'R' if x == 1 else 'H' if x == 2 else 'R+S' if x == 3 else 'H+S')
+        lambda x: 'L' if x == 1 else 'H' if x == 2 else 'L+S' if x == 3 else 'H+S')
     data.head()
+
+    if only_experts:
+        data = data[data['experienceAI2[5]'].isin([1]) | data['experienceAI2[4]'].isin([1])].copy()
+        os.chdir("AI_experts")
 
     # remove participants that did not watch enough videos
     data['retroClicksTotal'] = data.retrospectionClicks1 + data.retrospectionClicks2 + data.retrospectionClicks3
@@ -367,39 +382,39 @@ if __name__ == '__main__':
     # generating graphs for each single agent
     for i in range(1,4):
         column_name = 'retrospection' + str(i) + 'Points'
-        ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
         show_and_save_plt(ax, os.path.join('single_agents',column_name), ylim=(0, 1))
 
         column_name = 'retrospection' + str(i) + 'Goal'
-        ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
         show_and_save_plt(ax, os.path.join('single_agents',column_name), ylim=(0, 1))
 
         # for appropriate trust
         all_correct_values.extend(data[column_name])
 
         column_name = 'retrospection' + str(i) + '[1]'
-        ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
         show_and_save_plt(ax, os.path.join('single_agents','retrospectionPacman'+str(i)), ylim=(0, 1))
 
         column_name = 'retrospectionClicks' + str(i)
-        ax = sns.boxplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.boxplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
         show_and_save_plt(ax, os.path.join('single_agents',column_name), ylim=(0, 10))
 
     # generating graphs for all agents combined
-    ax = sns.barplot(x='condition', y='retroScoreTotal', data=data, order=['R','H','R+S','H+S'])
+    ax = sns.barplot(x='condition', y='retroScoreTotal', data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax,'retroScoreTotal', y_label= 'Total Score')
 
-    ax = sns.barplot(x='condition', y='retroGoalTotal', data=data, order=['R','H','R+S','H+S'])
+    ax = sns.barplot(x='condition', y='retroGoalTotal', data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax,'retroGoalTotal', y_label="Number of Selections",ylim=(0,3))
 
-    ax = sns.barplot(x='condition', y='retroPacmanTotal', data=data, order=['R','H','R+S','H+S'])
+    ax = sns.barplot(x='condition', y='retroPacmanTotal', data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax,'retroPacmanTotal', y_label='Number of Selections', ylim=(0,3))
 
-    ax = sns.boxplot(x='condition', y='retroClicksTotal', data=data, order=['R','H','R+S','H+S'])
+    ax = sns.boxplot(x='condition', y='retroClicksTotal', data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax,'retroClicksAvg',y_label='Number of Pauses', title='Pauses of the Video in the analysis task', ylim=(0, 10))
 
     data['retroTimeAvg'] = (data['retro1Time'] + data['retro2Time'] + data['retro3Time']) / 3.0
-    ax = sns.boxplot(x='condition', y='retroTimeAvg', data=data, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.boxplot(x='condition', y='retroTimeAvg', data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, 'retroTimeAvg', y_label='Seconds', ylim=(0, 500))
 
     # calculating confidence for each agent and the sum of confidence over all agents
@@ -407,7 +422,7 @@ if __name__ == '__main__':
     for i in range(1,4):
         column_name = 'RetrospectionConf' + str(i) + '[predictConf1]'
 
-        ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
         show_and_save_plt(ax, os.path.join('single_agents',column_name), y_label='confidence',ylim=(1,7),
                           title='Confidence in the analysis of agent'+ str(i))
 
@@ -426,23 +441,23 @@ if __name__ == '__main__':
     appropriate_confidence['correct'] = all_correct_values
     appropriate_confidence['condition'] = all_conditions
     ax = sns.catplot(x="condition", y='confidence', hue="correct", kind="bar",
-                     data=appropriate_confidence, order=['R', 'H', 'R+S', 'H+S'], legend=True, aspect=2);
+                     data=appropriate_confidence, order=['L', 'H', 'L+S', 'H+S'], legend=True, aspect=2);
     show_and_save_plt(ax, 'GoalAppropriateConfidence', y_label='Average Confidence',
                       ylim=(0, 7))
 
     # generating graph for average confidence
     column_name = 'retroConfAvg'
     data[column_name] = avg_conf / 3
-    ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, column_name, y_label='Average Confidence',
                       title='Average confidence in the analysis',ylim=(1,7))
 
     # general satisfaction analysis (same as for Trust task)
     satisfaction_analysis(1,data)
 
-    # Mann Whiteny tests
-    mann_whitney(data, 'retroScoreTotal')
-    mann_whitney(data, 'explSatisfaction' + 'Retro' + 'Avg')
+    # # Mann Whiteny tests (and mean for only experts)
+    mann_whitney(data, 'retroScoreTotal', mean_only=only_experts)
+    mann_whitney(data, 'explSatisfaction' + 'Retro' + 'Avg', mean_only=only_experts)
 
     mann_whitney(data, 'retroGoalTotal', mean_only=True)
     mann_whitney(data, 'retroPacmanTotal', mean_only=True)
@@ -456,20 +471,20 @@ if __name__ == '__main__':
     base_column_name = 'explSatisfaction' + str(number)
 
     column_name = base_column_name + '[4]'
-    ax = sns.barplot(x='condition', y=column_name, data=data_No_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y=column_name, data=data_No_LRP, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, 'retroSatisfactionVideo', y_label='Average Satisfaction', ylim=(1,5))
 
     column_name = base_column_name + '[5]'
-    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, 'retroSatisfactionSummary', y_label='Average Satisfaction', ylim=(1,5)
                       )
 
     column_name = base_column_name + '[6]'
-    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y=column_name, data=data_LRP, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, 'retroSatisfactionHeatmap', y_label='Average Satisfaction',ylim=(1,5))
 
     column_name = base_column_name + '[3]'
-    ax = sns.barplot(x='condition', y=column_name, data=data, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y=column_name, data=data, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, 'retroSatisfactionTooMuch', y_label='Average Satisfaction',ylim=(1,5))
 
     #### analye distribution of chosen objects:
@@ -503,9 +518,10 @@ if __name__ == '__main__':
                               ['pacman', 'normal_pill', 'power_pill', 'ghost', 'blue_ghost', 'cherry'])
     show_and_save_plt(ax, os.path.join('single_agents','retroDistributionRS'))
 
-    data_highlightsLRP = data.loc[data.randnumber == 4]
-    ax = analyze_distribution(data_highlightsLRP, ['pacman','normal_pill', 'power_pill','ghost','blue_ghost','cherry'])
-    show_and_save_plt(ax, os.path.join('single_agents','retroDistributionHS'))
+    if not only_experts:
+        data_highlightsLRP = data.loc[data.randnumber == 4]
+        ax = analyze_distribution(data_highlightsLRP, ['pacman','normal_pill', 'power_pill','ghost','blue_ghost','cherry'])
+        show_and_save_plt(ax, os.path.join('single_agents','retroDistributionHS'))
 
     # generate a dataframe of the main values, since it is easier to look at or use for future research
     # the main_values dataframes are not used in this project

@@ -282,7 +282,7 @@ if __name__ == '__main__':
     print('did not watch Retrospection:', difference)
 
     data['condition'] = data.randnumber.apply(
-        lambda x: 'R' if x == 1 else 'H' if x == 2 else 'R+S' if x == 3 else 'H+S')
+        lambda x: 'L' if x == 1 else 'H' if x == 2 else 'L+S' if x == 3 else 'H+S')
 
     #### SINGLE AGENTS ####
 
@@ -296,7 +296,7 @@ if __name__ == '__main__':
     merge1 = pd.merge(data,new_data_frame,on='seed')
 
     for key in interesting:
-        ax = sns.barplot(x='condition', y=key, data=merge1, order=['R','H','R+S','H+S'])
+        ax = sns.barplot(x='condition', y=key, data=merge1, order=['L', 'H', 'L+S', 'H+S'])
         plt.show()
 
     ### agent 2 ###
@@ -309,7 +309,7 @@ if __name__ == '__main__':
     merge2 = pd.merge(data, new_data_frame, on='seed')
 
     for key in interesting:
-        ax = sns.barplot(x='condition', y=key, data=merge2, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=key, data=merge2, order=['L', 'H', 'L+S', 'H+S'])
         plt.show()
 
     ### agent 3 ###
@@ -322,10 +322,10 @@ if __name__ == '__main__':
     merge3 = pd.merge(data, new_data_frame, on='seed')
 
     for key in interesting:
-        ax = sns.barplot(x='condition', y=key, data=merge3, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=key, data=merge3, order=['L', 'H', 'L+S', 'H+S'])
         plt.show()
 
-    ax = sns.barplot(x='condition', y='avoid_ghost', data=merge3, order=['R', 'H', 'R+S', 'H+S'])
+    ax = sns.barplot(x='condition', y='avoid_ghost', data=merge3, order=['L', 'H', 'L+S', 'H+S'])
     show_and_save_plt(ax, os.path.join('text', 'avoid_ghost_agent3'), y_label= 'got avoid ghost')
 
     #### COMBINED AGENTS ####
@@ -348,9 +348,9 @@ if __name__ == '__main__':
             label = 'average ' + key
         merge1[key] += merge2[key] + merge3[key]
         merge1[key] = merge1[key] / factor
-        ax = sns.barplot(x='condition', y=key, data=merge1, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=key, data=merge1, order=['L', 'H', 'L+S', 'H+S'])
         if key == 'HEATMAP':
-            ax = sns.barplot(x='condition', y=key, data=merge1, order=['R+S', 'H+S'],
+            ax = sns.barplot(x='condition', y=key, data=merge1, order=['L+S', 'H+S'],
                              palette=[sns.color_palette()[2], sns.color_palette()[3]])
         show_and_save_plt(ax, os.path.join('text', key + '_total'), y_label= label, ylim= ylim)
 
@@ -383,7 +383,7 @@ if __name__ == '__main__':
     print('did not watch:', difference)
 
     data['condition'] = data.randnumber.apply(
-        lambda x: 'R' if x == 1 else 'H' if x == 2 else 'R+S' if x == 3 else 'H+S')
+        lambda x: 'L' if x == 1 else 'H' if x == 2 else 'L+S' if x == 3 else 'H+S')
 
     #### SINGLE AGENTS ####
 
@@ -392,7 +392,7 @@ if __name__ == '__main__':
     new_data_frame.to_csv('text_trust1.csv')
     merge1 = pd.merge(data, new_data_frame, on='seed')
     for key in interesting:
-        ax = sns.barplot(x='condition', y=key, data=merge1, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=key, data=merge1, order=['L', 'H', 'L+S', 'H+S'])
         plt.show()
 
     ### comparison 2 ###
@@ -400,7 +400,7 @@ if __name__ == '__main__':
     new_data_frame.to_csv('text_trust2.csv')
     merge2 = pd.merge(data, new_data_frame, on='seed')
     for key in interesting:
-        ax = sns.barplot(x='condition', y=key, data=merge2, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=key, data=merge2, order=['L', 'H', 'L+S', 'H+S'])
         plt.show()
 
     ### comparison 3 ###
@@ -408,7 +408,7 @@ if __name__ == '__main__':
     new_data_frame.to_csv('text_trust3.csv')
     merge3 = pd.merge(data, new_data_frame, on='seed')
     for key in interesting:
-        ax = sns.barplot(x='condition', y=key, data=merge3, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=key, data=merge3, order=['L', 'H', 'L+S', 'H+S'])
         plt.show()
 
     #### COMBINED AGENTS ####
@@ -417,9 +417,9 @@ if __name__ == '__main__':
     for key in interesting:
         merge1[key] += merge2[key] + merge3[key]
         merge1[key] = merge1[key]
-        ax = sns.barplot(x='condition', y=key, data=merge1, order=['R', 'H', 'R+S', 'H+S'])
+        ax = sns.barplot(x='condition', y=key, data=merge1, order=['L', 'H', 'L+S', 'H+S'])
         if key == 'HEATMAP':
-            ax = sns.barplot(x='condition', y=key, data=merge1, order=['R+S', 'H+S'], palette=[sns.color_palette()[2],sns.color_palette()[3]])
+            ax = sns.barplot(x='condition', y=key, data=merge1, order=['L+S', 'H+S'], palette=[sns.color_palette()[2],sns.color_palette()[3]])
         if key in ['HEATMAP', 'UNJUSTIFIED', 'GAMEPLAY']:
             label = 'Number of Mentions'
         else:
